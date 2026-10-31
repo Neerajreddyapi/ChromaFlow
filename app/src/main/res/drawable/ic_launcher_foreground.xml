@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Three overlapping drops of dye: pink, cyan and amber. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#FF2A6D" android:fillAlpha="0.9"
+        android:pathData="M29,47a16,16 0 1,0 32,0a16,16 0 1,0 -32,0" />
+    <path android:fillColor="#05D9E8" android:fillAlpha="0.85"
+        android:pathData="M47,47a16,16 0 1,0 32,0a16,16 0 1,0 -32,0" />
+    <path android:fillColor="#FFB000" android:fillAlpha="0.85"
+        android:pathData="M38,63a16,16 0 1,0 32,0a16,16 0 1,0 -32,0" />
+</vector>
