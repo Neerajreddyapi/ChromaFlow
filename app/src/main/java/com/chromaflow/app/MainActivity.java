@@ -56,7 +56,8 @@ public class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
-        s.setTextZoom(100);
+        // Follow the phone's font size setting (Settings > Display > Font size).
+        s.setTextZoom(Math.round(getResources().getConfiguration().fontScale * 100));
 
         web.addJavascriptInterface(new Bridge(), "ChromaAndroid");
         web.setWebChromeClient(new WebChromeClient() {

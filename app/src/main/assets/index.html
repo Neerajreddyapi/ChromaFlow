@@ -6,7 +6,6 @@
 <title>Chroma Flow</title>
 <style>
 @font-face{font-family:'Unbounded';src:url('fonts/Unbounded.ttf') format('truetype');font-weight:200 900;font-display:swap}
-@font-face{font-family:'Figtree';src:url('fonts/Figtree.ttf') format('truetype');font-weight:300 900;font-display:swap}
 /* Layout: two screens. Home = live fluid preview under a scrolling menu with a pinned Play button.
    Play = the bare canvas, nothing on top. Single dark look by choice. */
 :root{
@@ -21,8 +20,9 @@
   --danger:#ff8a8a;
   --danger-bg:rgba(255,120,120,.08);
   --danger-line:rgba(255,120,120,.45);
-  --display:'Unbounded','Arial Black',sans-serif;
-  --body:'Figtree',Roboto,system-ui,sans-serif;
+  /* All text uses the phone's own font; only the Chroma Flow logo keeps its custom face. */
+  --logo:'Unbounded','Arial Black',sans-serif;
+  --body:system-ui,sans-serif;
   color-scheme:dark;
 }
 *{-webkit-tap-highlight-color:transparent}
@@ -40,9 +40,15 @@ body{background:var(--void);color:var(--fg);font-family:var(--body);-webkit-font
   padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
   display:grid;gap:30px}
 .hero{display:grid;gap:12px;padding-block:8px 10px}
-.hero h1{margin:0;font-family:var(--display);font-weight:600;font-size:clamp(44px,13vw,84px);line-height:.92;letter-spacing:-.03em;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+.hero h1{margin:0;font-family:var(--logo);font-weight:600;font-size:clamp(44px,13vw,84px);line-height:.92;letter-spacing:-.03em;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+.title-row{position:relative;display:inline-flex;align-items:center;gap:16px}
+.info{flex:none;width:34px;height:34px;padding:0;border-radius:50%;border:1.5px solid var(--line-strong);background:rgba(17,19,29,.55);color:var(--fg);font:600 18px/1 var(--body);letter-spacing:0;text-shadow:none;cursor:pointer;transition:background .2s,color .2s}
+.info[aria-expanded="true"]{background:var(--fg);color:var(--void)}
+.credit{position:absolute;z-index:2;top:calc(100% + 10px);left:0;padding:10px 16px;border-radius:14px;background:#1e2130;border:1px solid var(--line);font:500 15px/1.3 var(--body);letter-spacing:0;white-space:nowrap;text-shadow:none;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.rainbow{font-weight:700;background:linear-gradient(90deg,#ff2a6d,#ffb000,#b6ff3d,#05d9e8,#6a5cff,#ff2a6d);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rainbow 2.5s linear infinite}
+@keyframes rainbow{to{background-position:200% 0}}
 .hero p{margin:0;max-width:34ch;font-size:16px;line-height:1.45;color:var(--fg);opacity:.82}
-.menu h2{margin:0 0 12px;font-family:var(--display);font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.menu h2{margin:0 0 12px;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 
 .styles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .card{display:grid;grid-template-columns:46px 1fr;align-items:center;gap:12px;padding:11px 12px;border-radius:18px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);text-align:left;font-family:var(--body);cursor:pointer;transition:border-color .2s,background .2s,transform .15s}
@@ -71,7 +77,7 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
 .tune summary i{font-style:normal;font-size:20px;color:var(--muted);transition:transform .2s}
 .tune[open] summary i{transform:rotate(45deg)}
 .tune-body{display:grid;gap:22px;padding:4px 16px 18px}
-.tune h3{margin:0 0 6px;font-family:var(--display);font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tune h3{margin:0 0 6px;font-family:var(--body);font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 .sliders{display:grid;gap:10px}
 .slider{display:grid;grid-template-columns:1fr auto;row-gap:2px;font-size:15px;align-items:center}
 .slider label small{display:block;font-size:12.5px;line-height:1.3;color:var(--muted);margin-top:2px}
@@ -101,7 +107,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   padding:28px max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
   background:linear-gradient(to top,rgba(7,8,12,.96) 45%,rgba(7,8,12,0));transition:opacity .35s ease,visibility 0s linear 0s}
 .playbar.away{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility 0s linear .35s}
-.play{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:760px;margin:0 auto;height:60px;border:0;border-radius:999px;background:var(--fg);color:var(--void);font:600 17px/1 var(--display);letter-spacing:.02em;cursor:pointer;transition:transform .15s}
+.play{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:760px;margin:0 auto;height:60px;border:0;border-radius:999px;background:var(--fg);color:var(--void);font:600 17px/1 var(--body);letter-spacing:.02em;cursor:pointer;transition:transform .15s}
 .play:active{transform:scale(.98)}
 .play span{font:500 15px/1 var(--body);opacity:.6}
 
@@ -111,7 +117,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .nogl{position:fixed;inset:0;z-index:9;display:grid;place-items:center;padding:24px;box-sizing:border-box;text-align:center;background:var(--void)}
 .nogl p{max-width:34ch;line-height:1.5;color:var(--muted)}
-.nogl b{display:block;font-family:var(--display);font-weight:500;color:var(--fg);margin-bottom:8px}
+.nogl b{display:block;font-family:var(--body);font-weight:500;color:var(--fg);margin-bottom:8px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -121,7 +127,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <main class="menu" id="menu">
   <div class="menu-inner">
     <header class="hero">
-      <h1>Chroma<br>Flow</h1>
+      <h1>Chroma<br><span class="title-row">Flow<button class="info" type="button" id="info" aria-label="About" aria-expanded="false" aria-controls="credit">i</button><span class="credit" id="credit" role="status" hidden><span class="rainbow">Credits to Chinni (Kothi)</span></span></span></h1>
       <p>Pick a style and your colors, then tap Play. Swipe back any time to come back here.</p>
     </header>
 
@@ -1420,6 +1426,13 @@ resetAll.addEventListener('click', () => {
   resetAll.textContent = 'Everything is reset';
   armTimer = setTimeout(disarm, 2000);
 });
+
+/* ---------- Credits ---------- */
+// The "i" beside the title toggles the credit; a tap anywhere else closes it.
+const info = $('info'), credit = $('credit');
+function showCredit(on) { credit.hidden = !on; info.setAttribute('aria-expanded', String(on)); }
+info.addEventListener('click', () => showCredit(credit.hidden));
+document.addEventListener('pointerdown', e => { if (!credit.hidden && e.target !== info) showCredit(false); });
 
 /* ---------- Screens ---------- */
 const menu = $('menu'), playbar = $('playbar'), playhint = $('playhint');
