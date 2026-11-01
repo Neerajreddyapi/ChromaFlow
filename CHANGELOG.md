@@ -2,6 +2,11 @@
 
 All notable changes to Chroma Flow are listed here. Versions follow `versionName` in `app/build.gradle.kts`.
 
+## [1.3.3] - 2026-11-02
+
+### Added
+- A Website link (chromaflow.vercel.app) at the bottom of the menu, beside Privacy policy and Source code.
+
 ## [1.3.2] - 2026-11-01
 
 ### Added
