@@ -2,6 +2,10 @@
 
 # Chroma Flow
 
+[![Build](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml/badge.svg)](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 A fluid art app for Android. Touch the screen and swirl living color with your fingertips.
 
 <p>
@@ -55,7 +59,15 @@ Want to change Chroma Flow or build it yourself? Here's how to set up your envir
 adb logcat -s ChromaFlow
 ```
 
-**Contributing:** fork the repo, make your change on a branch, and open a pull request with a short description and a screenshot if it changes the look.
+## Contributing
+
+Contributions are welcome: bug reports, ideas, new styles, fixes and docs.
+
+1. Read the **[contributing guide](CONTRIBUTING.md)**. It covers the workflow, the project principles, how to add a style, and the testing checklist.
+2. For anything bigger than a small fix, [open an issue](https://github.com/Neerajreddyapi/ChromaFlow/issues/new/choose) first.
+3. Fork, branch, make your change, test it on a phone, and open a pull request. CI builds every pull request automatically.
+
+Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). Report security problems privately, as described in [SECURITY.md](SECURITY.md). Release notes are in the [changelog](CHANGELOG.md).
 
 ## Build
 

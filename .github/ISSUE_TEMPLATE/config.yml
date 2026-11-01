@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security problem
+    url: https://github.com/Neerajreddyapi/ChromaFlow/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
+  - name: Privacy policy
+    url: https://neerajreddyapi.github.io/ChromaFlow/privacy-policy.html
+    about: What Chroma Flow does (and doesn't do) with your data.

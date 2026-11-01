@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a new style, setting or idea
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you like Chroma Flow to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it be useful?
+      description: What would it let you do, or what problem does it solve?
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Sketches, colors, links or examples from other apps.
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Project principles
+      description: Chroma Flow stays private, offline and permission-free (see CONTRIBUTING.md).
+      options:
+        - label: My idea doesn't need internet access, accounts, ads or tracking.
+          required: true
