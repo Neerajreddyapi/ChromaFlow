@@ -24,6 +24,39 @@ A fluid art app for Android. Touch the screen and swirl living color with your f
 
 The whole app is a full-screen WebView over [`app/src/main/assets/index.html`](app/src/main/assets/index.html), which holds the WebGL fluid engine and the menu. [`MainActivity.java`](app/src/main/java/com/chromaflow/app/MainActivity.java) only handles full screen, the Back gesture (play → menu → exit), keep-screen-on while playing, and the system font size.
 
+## Development setup
+
+Want to change Chroma Flow or build it yourself? Here's how to set up your environment.
+
+1. **Install [Android Studio](https://developer.android.com/studio).** It includes the Android SDK and a bundled JDK. In *SDK Manager*, make sure **Android SDK Platform 36** is installed (the app compiles against API 36 and runs on Android 8.0+).
+2. **Clone the repo:**
+   ```sh
+   git clone https://github.com/Neerajreddyapi/ChromaFlow.git
+   cd ChromaFlow
+   ```
+3. **Open it in Android Studio** (*File → Open* → the `ChromaFlow` folder) and let Gradle sync. Android Studio creates `local.properties` with your SDK path for you.
+4. **Run it:** pick an emulator or a phone with USB debugging turned on, then press **Run ▶**. Or, from the terminal:
+   ```sh
+   # macOS: use Android Studio's bundled JDK
+   export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+   ./gradlew installDebug
+   ```
+   If Chroma Flow from Google Play is already installed, uninstall it first. Android won't install a build signed with a different key over it.
+
+**Where to make changes**
+
+- **Visuals, styles, settings and menu:** [`app/src/main/assets/index.html`](app/src/main/assets/index.html). Styles live in the `STYLES` list, sliders in `SLIDERS`, and the fluid shaders are in the same file.
+- **Android behaviour** (full screen, Back gesture, keep-screen-on, font size): [`MainActivity.java`](app/src/main/java/com/chromaflow/app/MainActivity.java).
+
+**Quick preview without a phone:** open `app/src/main/assets/index.html` in desktop Chrome. Press **Enter** to play, drag with the mouse to paint, and press **Esc** to return to the menu. Check on a real phone before releasing, since touch and performance differ.
+
+**Logs:** JavaScript `console` messages from the app go to logcat under the `ChromaFlow` tag:
+```sh
+adb logcat -s ChromaFlow
+```
+
+**Contributing:** fork the repo, make your change on a branch, and open a pull request with a short description and a screenshot if it changes the look.
+
 ## Build
 
 Requirements: Android Studio (or JDK 17+) and the Android SDK. No third-party libraries.
