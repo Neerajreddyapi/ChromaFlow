@@ -21,11 +21,6 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      # Build check only. APKs are not published here; Chroma Flow is distributed on Google Play.
       - name: Build debug APK
         run: ./gradlew assembleDebug
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: chroma-flow-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 14

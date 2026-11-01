@@ -5,6 +5,7 @@
 [![Build](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml/badge.svg)](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Google Play: coming soon](https://img.shields.io/badge/Google%20Play-coming%20soon-01875f?logo=googleplay&logoColor=white)](#download)
 
 A fluid art app for Android. Touch the screen and swirl living color with your fingertips.
 
@@ -15,6 +16,12 @@ A fluid art app for Android. Touch the screen and swirl living color with your f
   <img src="docs/screenshots/ocean.jpg" width="160" alt="Ocean style">
   <img src="docs/screenshots/chrome.jpg" width="160" alt="Chrome style">
 </p>
+
+## Download
+
+**Coming soon on Google Play.** Chroma Flow is being tested right now and will be available on the Play Store soon.
+
+There are no APK downloads on GitHub. Please install Chroma Flow from Google Play once it's live, so you get automatic updates. If you're a developer, you can [build it yourself](#development-setup).
 
 ## Features
 
