@@ -1,3 +1,13 @@
+import java.util.Properties
+
+// Release signing credentials come from keystore.properties at the repo root (gitignored),
+// same setup as PingDrop. Without the file the project still builds; release falls back
+// to the debug key so a fresh clone works, but Play only accepts the upload-key build.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }
+}
+
 plugins {
     id("com.android.application")
 }
@@ -14,11 +24,22 @@ android {
         versionName = "1.3"
     }
 
+    signingConfigs {
+        create("upload") {
+            if (keystorePropsFile.exists()) {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Sideload build: signed with the local debug key so the APK installs directly.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropsFile.exists()) signingConfigs.getByName("upload")
+                            else signingConfigs.getByName("debug")
         }
     }
 
