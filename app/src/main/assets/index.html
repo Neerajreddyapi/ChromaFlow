@@ -80,6 +80,8 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0}
 input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
 .bgpick{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted)}
 .note{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.links{display:flex;justify-content:center;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.links a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:8px 2px}
 
 .tune{border-radius:18px;background:var(--card);border:1px solid var(--line)}
 .tune summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;cursor:pointer}
@@ -221,6 +223,12 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       <button class="reset-all" type="button" id="reset-all">Reset everything</button>
       <p class="note">Puts every style, slider, color and switch back to how the app came.</p>
     </section>
+
+    <footer class="links">
+      <a href="https://neerajreddyapi.github.io/ChromaFlow/privacy-policy.html">Privacy policy</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://github.com/Neerajreddyapi/ChromaFlow">Source code</a>
+    </footer>
   </div>
 </main>
 

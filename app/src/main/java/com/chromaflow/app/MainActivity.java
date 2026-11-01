@@ -2,6 +2,8 @@ package com.chromaflow.app;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -70,9 +72,18 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                // The app is fully offline; never navigate away from the bundled page.
+                // The page never navigates away from the bundled file. Web links
+                // (privacy policy, source code) open in the phone's browser instead.
                 Uri url = request.getUrl();
-                return !"file".equals(url.getScheme());
+                String scheme = url.getScheme();
+                if ("http".equals(scheme) || "https".equals(scheme)) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, url));
+                    } catch (ActivityNotFoundException ignored) {
+                        // No browser installed; nothing to open the link with.
+                    }
+                }
+                return !"file".equals(scheme);
             }
         });
 
