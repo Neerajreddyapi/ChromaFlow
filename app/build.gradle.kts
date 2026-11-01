@@ -17,7 +17,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.chromaflow.app"
+        applicationId = "com.neerajreddy.chromaflow"
         minSdk = 26
         targetSdk = 36
         versionCode = 4
