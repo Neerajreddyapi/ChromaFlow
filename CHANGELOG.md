@@ -2,6 +2,11 @@
 
 All notable changes to Chroma Flow are listed here. Versions follow `versionName` in `app/build.gradle.kts`.
 
+## [1.3.4] - 2026-11-14
+
+### Changed
+- Every style now starts with Glow at 10% (it was up to 45%), so colors look clean instead of hazy. Ink keeps no glow. Glow you changed yourself is kept.
+
 ## [1.3.3] - 2026-11-02
 
 ### Added
