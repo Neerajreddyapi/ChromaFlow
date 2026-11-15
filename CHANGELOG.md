@@ -5,6 +5,7 @@ All notable changes to Chroma Flow are listed here. Versions follow `versionName
 ## [Unreleased]
 
 ### Added
+- Touch shapes (Play options): play with Hearts, Bubbles, Stars or Sparkles instead of fluid. Only the chosen shapes appear (no fluid), auto-stir drops them too, they follow Symmetry, and Tap to splash pops a burst. Shape colors: the fluid's own colors (default), Rainbow, or one color you pick.
 - iPhone and iPad app in `ios/`, using the same fluid engine (no live wallpaper there: iOS doesn't allow live wallpapers).
 
 ### Changed

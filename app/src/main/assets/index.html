@@ -30,6 +30,8 @@
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
 body{background:var(--void);color:var(--fg);font-family:var(--body);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none}
 #fluid{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-touch-callout:none}
+#shapes{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:1}
+.seg5 button{font-size:12.5px;padding:11px 1px}
 
 .menu{position:fixed;inset:0;z-index:5;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   background:linear-gradient(180deg,rgba(7,8,12,.15) 0,rgba(7,8,12,.55) 180px,rgba(7,8,12,.86) 420px,rgba(7,8,12,.93) 100%);
@@ -155,6 +157,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 </head>
 <body>
 <canvas id="fluid"></canvas>
+<canvas id="shapes"></canvas>
 
 <main class="menu" id="menu">
   <div class="menu-inner">
@@ -200,6 +203,25 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
             <button type="button" id="sym-4">4-way</button>
             <button type="button" id="sym-6">Kaleido</button>
           </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Touch shapes<small>Play with shapes instead of fluid</small></span>
+          <div class="seg seg5" role="group" aria-label="Touch shapes">
+            <button type="button" id="shape-off">Fluid</button>
+            <button type="button" id="shape-hearts">Hearts</button>
+            <button type="button" id="shape-bubbles">Bubbles</button>
+            <button type="button" id="shape-stars">Stars</button>
+            <button type="button" id="shape-sparkles">Sparkles</button>
+          </div>
+        </div>
+        <div class="field" id="shape-opts">
+          <span class="field-label">Shape colors</span>
+          <div class="seg" role="group" aria-label="Shape colors">
+            <button type="button" id="shc-fluid">Fluid colors</button>
+            <button type="button" id="shc-rainbow">Rainbow</button>
+            <button type="button" id="shc-custom">My color</button>
+          </div>
+          <label class="bgpick" id="shape-pick"><input type="color" id="shape-hex" aria-label="Shape color">Shape color</label>
         </div>
         <div class="sliders" id="g-play"></div>
         <label class="switch"><span>Auto-stir<small>The fluid keeps moving on its own while you play</small></span><input type="checkbox" id="t-auto"></label>
@@ -385,7 +407,8 @@ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (
 
 const DEFAULT_QUALITY = 'high';
 const DEFAULT_CUSTOM = ['#ff3d7f', '#ffd23f', '#3bceac', '#6a4cff'];
-const DEFAULT_OPTS = { auto:false, symmetry:1, tilt:0, tapSplash:true };
+// shape: 'off' paints fluid (default); hearts, bubbles, stars or sparkles leave only those shapes, no fluid.
+const DEFAULT_OPTS = { auto:false, symmetry:1, tilt:0, tapSplash:true, shape:'off', shapeColor:'fluid', shapeHex:'#ff5fa2' };
 // Live wallpaper: its own style, colors and switches. Style and colors start from the app's on first use.
 const DEFAULT_WP = { style:null, source:null, symmetry:1, quality:'medium', auto:true, fps:30 };
 let quality = DEFAULT_QUALITY;
@@ -1195,9 +1218,11 @@ function baseColor() {
   const pal = activePalette();
   return hexToRgb(pal[(Math.random() * pal.length) | 0]);
 }
+let lastBase = [1, 1, 1];  // the plain color behind the last generated stroke color
 function genColor() {
   const a = cfg.amt * cfg.ink;
   let c = baseColor();
+  lastBase = c;
   if (cfg.mode === 1) return [a, a, a];
   if (cfg.mode === 4) return [(1 - c[0]) * a, (1 - c[1]) * a, (1 - c[2]) * a];
   if (cfg.mode === 3) { const m = Math.max(c[0], c[1], c[2], 0.001); c = c.map(v => v / m); }
@@ -1259,7 +1284,8 @@ function texCoords(e) {
 canvas.addEventListener('pointerdown', e => {
   try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   const t = texCoords(e);
-  pointers.set(e.pointerId, { x: t.x, y: t.y, dx: 0, dy: 0, moved: false, drop: true, color: genColor(), age: 0 });
+  const color = genColor();
+  pointers.set(e.pointerId, { x: t.x, y: t.y, dx: 0, dy: 0, moved: false, drop: true, color, base: lastBase, sx: t.x, sy: t.y, age: 0 });
 });
 canvas.addEventListener('pointermove', e => {
   const p = pointers.get(e.pointerId);
@@ -1279,19 +1305,26 @@ function applyInputs(dt) {
   while (splatQueue.length) randomSplats(splatQueue.pop());
   pointers.forEach(p => {
     p.age += dt;
-    if (cfg.colorSpeed > 0 && p.age > 1 / cfg.colorSpeed) { p.age = 0; p.color = genColor(); }
+    if (cfg.colorSpeed > 0 && p.age > 1 / cfg.colorSpeed) { p.age = 0; p.color = genColor(); p.base = lastBase; }
+    const shapesOn = opts.shape !== 'off', fluidOn = !shapesOn;
     if (p.drop) {
       p.drop = false;
-      if (opts.tapSplash) splatSym(p.x, p.y, 0, 0, p.color.map(v => v * 2.5));
+      if (opts.tapSplash && fluidOn) splatSym(p.x, p.y, 0, 0, p.color.map(v => v * 2.5));
+      if (opts.tapSplash && shapesOn) shapesAt(p.x, p.y, p.base, 7, true);
     }
     if (p.moved) {
-      splatSym(p.x, p.y, p.dx * cfg.force, p.dy * cfg.force, p.color);
+      if (fluidOn) splatSym(p.x, p.y, p.dx * cfg.force, p.dy * cfg.force, p.color);
+      if (shapesOn) {
+        // One shape every so often along the stroke, not one per event.
+        const w = shapeCanvas.clientWidth, h = shapeCanvas.clientHeight;
+        if (Math.hypot((p.x - p.sx) * w, (p.y - p.sy) * h) > 18) { shapesAt(p.x, p.y, p.base, 1, false); p.sx = p.x; p.sy = p.y; }
+      }
       p.dx = 0; p.dy = 0; p.moved = false;
     }
   });
 }
 
-let autoPhase = Math.random() * 10, autoPrev = null, autoColor = null, autoAge = 0;
+let autoPhase = Math.random() * 10, autoPrev = null, autoColor = null, autoAge = 0, autoShapeGap = 0;
 function autoStir(dt) {
   if (playing && !opts.auto) return;
   autoPhase += dt;
@@ -1300,6 +1333,13 @@ function autoStir(dt) {
   const y = (cfg.buoy > 0.5 && cfg.mode !== 4 ? 0.3 : 0.5) + 0.25 * Math.sin(t * 1.37 + 1);
   autoAge += dt;
   if (!autoColor || (cfg.colorSpeed > 0 && autoAge > 1 / cfg.colorSpeed)) { autoAge = 0; autoColor = genColor(); }
+  if (playing && opts.shape !== 'off') {
+    // Playing with shapes: auto-stir drops shapes along its path instead of fluid.
+    autoShapeGap += dt;
+    if (autoShapeGap > 0.09) { autoShapeGap = 0; shapesAt(x, y, lastBase, 1, false); }
+    autoPrev = { x, y };
+    return;
+  }
   if (autoPrev) {
     // The menu preview draws a single stroke; symmetry only applies to auto-stir while playing.
     const draw = playing ? splatSym : splat;
@@ -1320,7 +1360,109 @@ function frame() {
   autoStir(dt);
   step(dt);
   render();
+  drawShapes(dt);
   requestAnimationFrame(frame);
+}
+
+/* ---------- Touch shapes ---------- */
+// Optional: touches leave little shapes that float away, drawn on a 2D layer above the fluid.
+const shapeCanvas = document.getElementById('shapes');
+const sctx = shapeCanvas.getContext('2d');
+const SHAPE_NAMES = { hearts: 'Hearts', bubbles: 'Bubbles', stars: 'Stars', sparkles: 'Sparkles' };
+const MAX_SHAPES = 350;
+let particles = [], shapesShown = false;
+const rgbCss = c => `rgb(${c.map(v => Math.round(Math.min(1, Math.max(0, v)) * 255)).join(',')})`;
+function shapeColor(base) {
+  if (opts.shapeColor === 'rainbow') return hsv(Math.random(), 0.75, 1);
+  if (opts.shapeColor === 'custom') return hexToRgb(opts.shapeHex);
+  const m = Math.max(base[0], base[1], base[2], 0.001);  // the stroke's own color at full strength
+  return base.map(v => v / m);
+}
+// The same mirrored or rotated copies as the fluid's symmetry setting.
+function symPoints(x, y) {
+  const n = opts.symmetry;
+  if (n === 2) return [[x, y], [1 - x, y]];
+  if (n === 4) return [[x, y], [1 - x, y], [x, 1 - y], [1 - x, 1 - y]];
+  if (n === 6) {
+    const a = canvas.width / canvas.height, px = (x - 0.5) * a, py = y - 0.5;
+    return [0, 1, 2, 3, 4, 5].map(k => { const t = k * Math.PI / 3, c = Math.cos(t), s = Math.sin(t); return [0.5 + (px * c - py * s) / a, 0.5 + px * s + py * c]; });
+  }
+  return [[x, y]];
+}
+function shapesAt(x, y, base, count, burst) {
+  const w = shapeCanvas.clientWidth, h = shapeCanvas.clientHeight, kind = opts.shape;
+  for (const [sx, sy] of symPoints(x, y)) {
+    for (let i = 0; i < count; i++) {
+      const ang = Math.random() * Math.PI * 2, sp = burst ? 70 + Math.random() * 130 : 8 + Math.random() * 30;
+      const floats = kind === 'hearts' || kind === 'bubbles';
+      particles.push({
+        kind, x: sx * w, y: (1 - sy) * h, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - (floats ? 40 : 0),
+        rot: kind === 'hearts' ? (Math.random() - 0.5) * 0.6 : Math.random() * Math.PI, vr: (Math.random() - 0.5) * (kind === 'stars' ? 4 : 1),
+        size: kind === 'sparkles' ? 9 + Math.random() * 10 : kind === 'bubbles' ? 10 + Math.random() * 20 : 12 + Math.random() * 14,
+        age: 0, life: kind === 'sparkles' ? 0.6 + Math.random() * 0.5 : 1.4 + Math.random() * 1.1,
+        phase: Math.random() * 6, color: rgbCss(shapeColor(base)),
+      });
+    }
+  }
+  if (particles.length > MAX_SHAPES) particles.splice(0, particles.length - MAX_SHAPES);
+}
+function drawShape(q, alpha) {
+  sctx.fillStyle = q.color;
+  sctx.strokeStyle = q.color;
+  sctx.beginPath();
+  if (q.kind === 'hearts') {
+    sctx.moveTo(0, 0.9);
+    sctx.bezierCurveTo(-1.25, 0.05, -0.75, -1.1, 0, -0.42);
+    sctx.bezierCurveTo(0.75, -1.1, 1.25, 0.05, 0, 0.9);
+    sctx.fill();
+  } else if (q.kind === 'bubbles') {
+    sctx.arc(0, 0, 1, 0, Math.PI * 2);
+    sctx.globalAlpha = alpha * 0.18; sctx.fill();
+    sctx.globalAlpha = alpha; sctx.lineWidth = 0.1; sctx.stroke();
+    sctx.beginPath(); sctx.arc(-0.35, -0.35, 0.22, 0, Math.PI * 2);
+    sctx.fillStyle = '#fff'; sctx.globalAlpha = alpha * 0.8; sctx.fill();
+  } else if (q.kind === 'stars') {
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 ? 0.42 : 1, t = -Math.PI / 2 + i * Math.PI / 5;
+      i ? sctx.lineTo(r * Math.cos(t), r * Math.sin(t)) : sctx.moveTo(r * Math.cos(t), r * Math.sin(t));
+    }
+    sctx.closePath(); sctx.fill();
+  } else {
+    sctx.moveTo(0, -1);
+    sctx.quadraticCurveTo(0, 0, 1, 0); sctx.quadraticCurveTo(0, 0, 0, 1);
+    sctx.quadraticCurveTo(0, 0, -1, 0); sctx.quadraticCurveTo(0, 0, 0, -1);
+    sctx.fill();
+  }
+}
+function drawShapes(dt) {
+  if (!particles.length && !shapesShown) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = shapeCanvas.clientWidth, h = shapeCanvas.clientHeight;
+  if (shapeCanvas.width !== Math.round(w * dpr) || shapeCanvas.height !== Math.round(h * dpr)) {
+    shapeCanvas.width = Math.round(w * dpr); shapeCanvas.height = Math.round(h * dpr);
+  }
+  sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  sctx.clearRect(0, 0, w, h);
+  shapesShown = particles.length > 0;
+  // Solid shapes with a soft glow, so they stay visible over bright fluid too (no glow on Ink's paper).
+  sctx.globalCompositeOperation = 'source-over';
+  particles = particles.filter(q => (q.age += dt) < q.life);
+  for (const q of particles) {
+    const t = q.age / q.life, drag = 1 - 1.6 * dt;
+    q.vx *= drag; q.vy *= drag;
+    if (q.kind === 'hearts' || q.kind === 'bubbles') q.vy -= 35 * dt;  // they float up
+    q.x += (q.vx + (q.kind === 'bubbles' ? Math.sin(q.age * 3 + q.phase) * 14 : 0)) * dt;
+    q.y += q.vy * dt;
+    q.rot += q.vr * dt;
+    const alpha = Math.max(0, t < 0.12 ? t / 0.12 : 1 - (t - 0.12) / 0.88);
+    const grow = q.kind === 'sparkles' ? 1 - t * 0.6 : 0.6 + 0.4 * Math.min(1, t * 5) + (q.kind === 'bubbles' ? t * 0.4 : 0);
+    sctx.save();
+    sctx.globalAlpha = alpha;
+    if (cfg.mode !== 4) { sctx.shadowColor = q.color; sctx.shadowBlur = 14; }
+    sctx.translate(q.x, q.y); sctx.rotate(q.rot); sctx.scale(q.size * grow, q.size * grow);
+    drawShape(q, alpha);
+    sctx.restore();
+  }
 }
 
 
@@ -1383,6 +1525,7 @@ function syncEdited() {
 // One line under "Play options" saying what's switched on.
 function syncPlaySummary() {
   const on = [];
+  if (opts.shape !== 'off') on.push(SHAPE_NAMES[opts.shape]);
   if (opts.symmetry > 1) on.push({ 2: 'Mirror', 4: '4-way', 6: 'Kaleido' }[opts.symmetry]);
   if (opts.auto) on.push('Auto-stir');
   if (opts.tilt > 0) on.push('Tilt to pour');
@@ -1459,6 +1602,7 @@ SLIDERS.forEach(def => {
 
 const STYLE_TOGGLES = [['t-shading', 'shading'], ['t-rays', 'rays'], ['t-stars', 'stars']];
 const SYMMETRIES = [1, 2, 4, 6];
+const SHAPE_KEYS = ['off', 'hearts', 'bubbles', 'stars', 'sparkles'], SHAPE_COLORS = ['fluid', 'rainbow', 'custom'];
 
 function syncUI() {
   grid.querySelectorAll('.card').forEach(b => b.setAttribute('aria-pressed', String(b.id === 'style-' + style.id)));
@@ -1495,6 +1639,11 @@ function syncUI() {
     : cfg.mode === 1 ? `Tap a circle to choose a color. ${style.name} blends them from darkest to brightest, like heat.`
     : 'Tap a circle to choose a color.';
   $('t-auto').checked = opts.auto;
+  SHAPE_KEYS.forEach(k => $('shape-' + k).setAttribute('aria-pressed', String(opts.shape === k)));
+  SHAPE_COLORS.forEach(k => $('shc-' + k).setAttribute('aria-pressed', String(opts.shapeColor === k)));
+  $('shape-opts').hidden = opts.shape === 'off';
+  $('shape-pick').hidden = opts.shapeColor !== 'custom';
+  $('shape-hex').value = opts.shapeHex;
   $('t-tap').checked = opts.tapSplash;
   SYMMETRIES.forEach(n => $('sym-' + n).setAttribute('aria-pressed', String(opts.symmetry === n)));
   ['style', 'rainbow', 'custom'].forEach(s => $('src-' + s).setAttribute('aria-pressed', String(colorSource === s)));
@@ -1522,7 +1671,7 @@ function selectStyle(i) {
 function setColorSource(src) {
   colorSource = src;
   autoColor = null;
-  pointers.forEach(p => { p.color = genColor(); });
+  pointers.forEach(p => { p.color = genColor(); p.base = lastBase; });
   syncUI();
   save();
 }
@@ -1539,6 +1688,12 @@ STYLE_TOGGLES.forEach(([id, key]) => $(id).addEventListener('change', e => { cfg
 $('t-auto').addEventListener('change', e => { opts.auto = e.target.checked; save(); syncPlaySummary(); });
 $('t-tap').addEventListener('change', e => { opts.tapSplash = e.target.checked; save(); syncPlaySummary(); });
 SYMMETRIES.forEach(n => $('sym-' + n).addEventListener('click', () => { opts.symmetry = n; syncUI(); save(); }));
+// A quick burst near the top of the screen, so you can see the shape behind the menu.
+function previewShapes() { if (opts.shape !== 'off') shapesAt(0.5, 0.86, baseColor(), 10, true); }
+SHAPE_KEYS.forEach(k => $('shape-' + k).addEventListener('click', () => { opts.shape = k; syncUI(); save(); previewShapes(); }));
+SHAPE_COLORS.forEach(k => $('shc-' + k).addEventListener('click', () => { opts.shapeColor = k; syncUI(); save(); previewShapes(); }));
+$('shape-hex').addEventListener('input', e => { opts.shapeHex = e.target.value; opts.shapeColor = 'custom'; syncUI(); saveSoon(); });
+
 Object.keys(QUALITY).forEach(q => $('q-' + q).addEventListener('click', () => {
   quality = q;
   initFramebuffers();
@@ -1694,7 +1849,8 @@ function startPlay() {
   autoPrev = null;
   menu.classList.add('away');
   playbar.classList.add('away');
-  splatQueue.push(6);
+  if (opts.shape !== 'off') { clearDye(); clearDye(); particles = []; }  // shapes only: start on the plain background
+  else splatQueue.push(6);
   if (bridge) bridge.setPlaying(true);
   let hinted = false;
   try { hinted = localStorage.getItem(KEY + '.hinted') === '1'; localStorage.setItem(KEY + '.hinted', '1'); } catch (e) {}
