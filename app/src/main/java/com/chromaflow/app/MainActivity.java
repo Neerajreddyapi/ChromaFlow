@@ -36,6 +36,9 @@ public class MainActivity extends Activity {
     private WebView web;
     private static final int REQUEST_WALLPAPER = 1;
     private static final String KEY_PENDING_WHERE = "pending_where";
+    // The last wallpaper result ("home", "lock", "both", or "none" if backed out), kept until the page
+    // shows it: setting a wallpaper can recolour the system theme and restart this screen first.
+    private static final String KEY_RESULT = "last_result";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -207,9 +210,10 @@ public class MainActivity extends Activity {
         boolean applied = saveForScreens(p.getString(KEY_PENDING_WHERE, "both"),
                 p.getString(FluidWallpaperService.KEY_PENDING_LOOK, null),
                 p.getString(FluidWallpaperService.KEY_PENDING_OPTIONS, null), false);
+        String where = p.getString(KEY_PENDING_WHERE, "both");
         p.edit().remove(FluidWallpaperService.KEY_PENDING_LOOK).remove(FluidWallpaperService.KEY_PENDING_OPTIONS)
-                .remove(KEY_PENDING_WHERE).apply();
-        web.evaluateJavascript("window.chromaWallpaperDone && window.chromaWallpaperDone(" + applied + ")", null);
+                .remove(KEY_PENDING_WHERE).putString(KEY_RESULT, applied ? where : "none").apply();
+        web.evaluateJavascript("window.chromaWallpaperDone && window.chromaWallpaperDone()", null);
     }
 
     private class Bridge {
@@ -219,6 +223,15 @@ public class MainActivity extends Activity {
                 if (value) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             });
+        }
+
+        /** The wallpaper result waiting to be shown, once ("" when there is none). */
+        @JavascriptInterface
+        public String takeWallpaperResult() {
+            SharedPreferences p = wallpaperPrefs();
+            String r = p.getString(KEY_RESULT, "");
+            if (!r.isEmpty()) p.edit().remove(KEY_RESULT).apply();
+            return r;
         }
 
         /** True when Chroma Flow is the home or lock screen wallpaper right now. */

@@ -1805,7 +1805,6 @@ function wallpaperLook() {
   return JSON.stringify({ style: style.id, cfg, source: colorSource, colors, quality: wp.quality, symmetry: wp.symmetry, tapSplash: true });
 }
 const WHERE_TEXT = { home: 'home screen', lock: 'lock screen', both: 'home and lock screen' };
-let lastWhere = 'both';
 const whereSheet = $('where');
 const whereOpen = () => !whereSheet.classList.contains('away');
 function askWhere() {
@@ -1815,7 +1814,6 @@ function askWhere() {
 function closeWhere() { whereSheet.classList.add('away'); }
 function setWallpaper(where) {
   closeWhere();
-  lastWhere = where;
   save();
   const result = bridge.setWallpaper(wallpaperLook(), JSON.stringify({ auto: wp.auto, fps: wp.fps }), where);
   if (result === 'updated') toast(`Your ${WHERE_TEXT[where]} now shows ${style.name}.`);
@@ -1832,10 +1830,14 @@ if (wpOn) {
   Object.keys(QUALITY).forEach(q => $('wq-' + q).addEventListener('click', () => { wp.quality = q; save(); syncWp(); }));
   WP_FPS.forEach(f => $('wp-fps-' + f).addEventListener('click', () => { wp.fps = f; save(); syncWp(); }));
   window.chromaWallpaperFailed = () => toast("This phone doesn't support live wallpapers.");
-  // Called when the phone's wallpaper screen closes: set, or backed out without changing it.
-  window.chromaWallpaperDone = applied => {
+  // Called when the phone's wallpaper screen closes (set, or backed out), and once at start in
+  // case setting the wallpaper restarted the screen before the message could show.
+  window.chromaWallpaperDone = () => {
+    const where = bridge.takeWallpaperResult ? bridge.takeWallpaperResult() : '';
+    if (!where) return;
     syncUI();
-    toast(applied ? `Your ${WHERE_TEXT[lastWhere]} now shows ${style.name}.` : 'Wallpaper not changed.');
+    const name = (STYLES.find(s => s.id === wp.style) || style).name;
+    toast(where !== 'none' ? `Your ${WHERE_TEXT[where]} now shows ${name}.` : 'Wallpaper not changed.');
   };
   // Coming back from the phone's wallpaper screen: refresh the buttons.
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncUI(); });
@@ -1895,6 +1897,7 @@ canvas.addEventListener('webglcontextrestored', () => {
 
 initFramebuffers();
 selectStyle(Math.max(0, STYLES.findIndex(s => s.id === saved.style)));
+if (window.chromaWallpaperDone) setTimeout(window.chromaWallpaperDone, 600);
 if (['style', 'rainbow', 'custom'].includes(saved.source)) { colorSource = saved.source; syncUI(); save(); }
 requestAnimationFrame(frame);
 })();
