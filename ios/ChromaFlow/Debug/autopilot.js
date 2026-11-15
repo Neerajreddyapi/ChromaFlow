@@ -89,7 +89,14 @@
   // App Store screenshots: no finger, no captions, just the app.
   async function storeShots() {
     finger.remove(); cap.remove();
-    const shotClean = async name => { await sleep(400); log('SHOT:' + name); await sleep(1200); };
+    // The screenshot is taken by the Mac a moment after the log line arrives, so each scene holds
+    // for 4 s; play scenes keep drawing meanwhile so the colour doesn't fade before the shot.
+    const shotClean = async (name, paths) => {
+      log('SHOT:' + name);
+      const until = performance.now() + 4000;
+      if (!paths) { await sleep(4000); return; }
+      while (performance.now() < until) for (const p of paths) { if (performance.now() >= until) break; await stroke(p, 700); }
+    };
     const draw = async (paths, ms) => { for (const p of paths) await stroke(p, ms); };
     const big = [[[0.1, 0.25], [0.45, 0.4], [0.9, 0.22]], [[0.85, 0.6], [0.5, 0.48], [0.15, 0.68]], [[0.3, 0.88], [0.55, 0.6], [0.75, 0.9]], [[0.5, 0.1], [0.62, 0.45], [0.42, 0.8]]];
     finger.style.display = 'none';
@@ -97,23 +104,23 @@
     await shotClean('1-menu');
     $('style-neon').click(); await sleep(700); $('play').click(); await sleep(900);
     $('playhint').style.display = 'none';
-    await draw(big, 1100); await draw(big.slice(0, 2), 900); await shotClean('2-neon');
+    await draw(big, 1100); await shotClean('2-neon', big);
     window.chromaBack(); await sleep(900);
     $('style-galaxy').click(); $('sym-6').click(); await sleep(700); $('play').click(); await sleep(900);
-    await draw(big.slice(0, 3), 1000); await shotClean('3-galaxy-kaleido');
+    await draw(big.slice(0, 3), 1000); await shotClean('3-galaxy-kaleido', big.slice(0, 2));
     window.chromaBack(); await sleep(900);
     $('style-ocean').click(); $('sym-1').click(); await sleep(700); $('play').click(); await sleep(900);
-    await draw(big, 1100); await shotClean('4-ocean');
+    await draw(big, 1100); await shotClean('4-ocean', big);
     window.chromaBack(); await sleep(900);
     $('style-fire').click(); await sleep(700); $('play').click(); await sleep(900);
-    await draw(big, 1000); await sleep(600); await shotClean('5-fire');
+    await draw(big, 900); await shotClean('5-fire', big);
     window.chromaBack(); await sleep(900);
     $('style-neon').click(); $('shape-hearts').click(); $('shc-rainbow').click(); $('sym-6').click(); await sleep(700); $('play').click(); await sleep(900);
-    await draw(big, 1200); await shotClean('6-hearts');
+    await draw(big, 1200); await shotClean('6-hearts', big);
     window.chromaBack(); await sleep(900);
     $('shape-off').click(); $('sym-1').click();
     $('style-chrome').click(); await sleep(700); $('play').click(); await sleep(900);
-    await draw(big, 1100); await shotClean('7-chrome');
+    await draw(big, 1100); await shotClean('7-chrome', big);
     log('DONE');
   }
 
