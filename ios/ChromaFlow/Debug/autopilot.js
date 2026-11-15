@@ -86,9 +86,41 @@
   async function play() { await tap('play', 900); check(playing(), 'Play hides the menu'); }
   async function back() { say('Swipe in from the left edge: back'); await fingerTo(4, innerHeight / 2, 250); finger.classList.add('down'); await fingerTo(innerWidth * 0.6, innerHeight / 2, 350); finger.classList.remove('down'); window.chromaBack(); await sleep(900); }
   const shapesDrawn = () => { const c = $('shapes'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; for (let i = 3; i < d.length; i += 4 * 97) if (d[i] > 0) return true; return false; };
+  // App Store screenshots: no finger, no captions, just the app.
+  async function storeShots() {
+    finger.remove(); cap.remove();
+    const shotClean = async name => { await sleep(400); log('SHOT:' + name); await sleep(1200); };
+    const draw = async (paths, ms) => { for (const p of paths) await stroke(p, ms); };
+    const big = [[[0.1, 0.25], [0.45, 0.4], [0.9, 0.22]], [[0.85, 0.6], [0.5, 0.48], [0.15, 0.68]], [[0.3, 0.88], [0.55, 0.6], [0.75, 0.9]], [[0.5, 0.1], [0.62, 0.45], [0.42, 0.8]]];
+    finger.style.display = 'none';
+    $('style-galaxy').click(); await sleep(2500);
+    await shotClean('1-menu');
+    $('style-neon').click(); await sleep(700); $('play').click(); await sleep(900);
+    $('playhint').style.display = 'none';
+    await draw(big, 1100); await draw(big.slice(0, 2), 900); await shotClean('2-neon');
+    window.chromaBack(); await sleep(900);
+    $('style-galaxy').click(); $('sym-6').click(); await sleep(700); $('play').click(); await sleep(900);
+    await draw(big.slice(0, 3), 1000); await shotClean('3-galaxy-kaleido');
+    window.chromaBack(); await sleep(900);
+    $('style-ocean').click(); $('sym-1').click(); await sleep(700); $('play').click(); await sleep(900);
+    await draw(big, 1100); await shotClean('4-ocean');
+    window.chromaBack(); await sleep(900);
+    $('style-fire').click(); await sleep(700); $('play').click(); await sleep(900);
+    await draw(big, 1000); await sleep(600); await shotClean('5-fire');
+    window.chromaBack(); await sleep(900);
+    $('style-neon').click(); $('shape-hearts').click(); $('shc-rainbow').click(); $('sym-6').click(); await sleep(700); $('play').click(); await sleep(900);
+    await draw(big, 1200); await shotClean('6-hearts');
+    window.chromaBack(); await sleep(900);
+    $('shape-off').click(); $('sym-1').click();
+    $('style-chrome').click(); await sleep(700); $('play').click(); await sleep(900);
+    await draw(big, 1100); await shotClean('7-chrome');
+    log('DONE');
+  }
+
   const openPlayOptions = async () => { if (!$('sec-play').open) await tap(document.querySelector('#sec-play summary')); };
 
   await sleep(2500);
+  if (window.AP_STORE) { await storeShots(); return; }
   log('START');
   say('Chroma Flow on iPhone'); await sleep(2000); await shot('01-menu');
 

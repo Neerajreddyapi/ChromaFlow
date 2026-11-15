@@ -24,7 +24,11 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         content.add(WeakMessageHandler(self), name: "chroma")
         #if DEBUG
         // Demo and self-test: launch with -autopilot (see Debug/autopilot.js). Debug builds only.
-        if ProcessInfo.processInfo.arguments.contains("-autopilot"),
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-storeshots") {
+            content.addUserScript(WKUserScript(source: "window.AP_STORE = true;", injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+        if args.contains("-autopilot") || args.contains("-storeshots"),
            let url = Bundle.main.url(forResource: "autopilot", withExtension: "js"),
            let js = try? String(contentsOf: url, encoding: .utf8) {
             content.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
