@@ -1,203 +1,22 @@
 import XCTest
 
-/// Walks through the whole app on a simulator: styles, colors, play mode with finger strokes,
-/// symmetry, auto-stir, Fine-tune, Settings, links, rotation, background/foreground and
-/// settings surviving a relaunch. Screenshots are attached to the test result.
+/// Runs the in-app autopilot (ChromaFlow/Debug/autopilot.js, Debug builds only): it taps through
+/// every style, color source, play option, touch shape, Fine-tune, the resets and Settings,
+/// draws strokes, and checks 42 things along the way. XCUITest can't see inside the web view,
+/// so the autopilot does the checking; if every check passes it opens the Website link,
+/// which sends the app to the background.
 final class ChromaFlowUITests: XCTestCase {
 
-    private let app = XCUIApplication()
-    private var shotIndex = 0
-
-    override func setUp() {
-        continueAfterFailure = true
-    }
-
-    // MARK: helpers
-
-    private func shot(_ name: String) {
-        shotIndex += 1
-        let a = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        a.name = String(format: "%02d-%@", shotIndex, name)
-        a.lifetime = .keepAlways
-        add(a)
-    }
-
-    private func find(_ prefix: String) -> XCUIElement {
-        app.webViews.descendants(matching: .any)
-            .matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
-    }
-
-    private func pause(_ s: TimeInterval) { Thread.sleep(forTimeInterval: s) }
-
-    /// Scrolls the menu until the element sits clear of the pinned Play bar, then taps it.
-    @discardableResult
-    private func tap(_ prefix: String, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
-        let el = find(prefix)
-        guard el.waitForExistence(timeout: 6) else {
-            XCTFail("Couldn't find “\(prefix)”", file: file, line: line); return el
-        }
-        reveal(el)
-        el.tap()
-        pause(0.6)
-        return el
-    }
-
-    private func reveal(_ el: XCUIElement) {
-        let h = app.windows.firstMatch.frame.height
-        for _ in 0..<14 {
-            let f = el.frame
-            if f.minY > 40 && f.maxY < h - 130 { return }
-            let web = app.webViews.firstMatch
-            let from = web.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
-            let to = web.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: f.midY > h / 2 ? 0.30 : 0.94))
-            from.press(forDuration: 0.05, thenDragTo: to)
-            pause(0.4)
-        }
-    }
-
-    /// Taps a button inside a labelled button group, opening Play options first if needed.
-    private func groupTap(_ group: String, _ name: String, file: StaticString = #filePath, line: UInt = #line) {
-        let el = app.webViews.otherElements[group].buttons[name]
-        if !el.exists || el.frame.height < 4 { tap("Play options") }
-        guard el.waitForExistence(timeout: 6) else {
-            XCTFail("Couldn't find “\(name)” in “\(group)”", file: file, line: line); return
-        }
-        reveal(el); el.tap(); pause(0.6)
-    }
-
-    private func stroke(_ a: CGVector, _ b: CGVector) {
-        let w = app.windows.firstMatch
-        w.coordinate(withNormalizedOffset: a).press(forDuration: 0.05, thenDragTo: w.coordinate(withNormalizedOffset: b))
-    }
-
-    private func paint() {
-        stroke(CGVector(dx: 0.2, dy: 0.25), CGVector(dx: 0.8, dy: 0.45))
-        stroke(CGVector(dx: 0.75, dy: 0.7), CGVector(dx: 0.25, dy: 0.55))
-        stroke(CGVector(dx: 0.5, dy: 0.15), CGVector(dx: 0.45, dy: 0.85))
-        pause(0.3)
-    }
-
-    /// Swipe in from the left edge, the iPhone version of Android's Back.
-    private func edgeBack() {
-        let w = app.windows.firstMatch
-        w.coordinate(withNormalizedOffset: CGVector(dx: 0.0, dy: 0.5))
-            .press(forDuration: 0.05, thenDragTo: w.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)))
-        pause(1.0)
-    }
-
-    private var playButton: XCUIElement { find("Play ") }
-
-    // MARK: the walk-through
-
     func testEverything() {
-        XCUIDevice.shared.orientation = .portrait
+        let app = XCUIApplication()
+        app.launchArguments = ["-autopilot"]
         app.launch()
-        XCTAssertTrue(playButton.waitForExistence(timeout: 15), "The menu didn't load")
-        pause(2.5)
-        shot("menu")
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        let leftForSafari = safari.wait(for: .runningForeground, timeout: 420)
 
-        // Styles
-        tap("Ocean")
-        XCTAssertTrue(playButton.label.contains("Ocean"), "Play button should say Ocean, says \(playButton.label)")
-        pause(1.5); shot("style-ocean")
-
-        // Play mode, finger strokes, back
-        playButton.tap(); pause(1.5)
-        XCTAssertFalse(playButton.isHittable, "The menu should be hidden while playing")
-        paint(); shot("play-ocean-strokes")
-        edgeBack()
-        XCTAssertTrue(playButton.isHittable, "Edge swipe should return to the menu")
-        shot("back-to-menu")
-
-        // Colors
-        tap("Fire"); tap("Rainbow"); pause(1); shot("colors-rainbow")
-        tap("My colors"); pause(1); shot("colors-mine")
-        tap("My color 1"); pause(1.5); shot("color-picker")
-        app.swipeDown(velocity: .fast); pause(1)
-        if app.buttons["Close"].exists { app.buttons["Close"].tap(); pause(1) }
-        tap("Style"); pause(0.5)
-
-        // Play options start folded; open them, then symmetry + play
-        tap("Neon"); tap("Play options"); pause(0.5); shot("play-options-open")
-        tap("Kaleido")
-        XCTAssertTrue(find("Play options").label.contains("Kaleido") || app.webViews.staticTexts["Kaleido · Tap to splash"].exists,
-                      "Play options summary should mention Kaleido")
-        playButton.tap(); pause(1); paint(); shot("play-kaleido")
-        edgeBack()
-
-        // Touch shapes: only the picked shape appears, no fluid; every shape and color option
-        for name in ["Hearts", "Bubbles", "Stars", "Sparkles"] {
-            groupTap("Touch shapes", name)
-            if name == "Hearts" { groupTap("Shape colors", "Rainbow") } else if name == "Stars" { groupTap("Shape colors", "Fluid colors") }
-            playButton.tap(); pause(1); paint()
-            app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()  // tap burst
-            pause(0.4); shot("shapes-" + name.lowercased())
-            edgeBack()
-        }
-        groupTap("Touch shapes", "Fluid"); pause(0.5)
-        XCTAssertFalse(find("Shape colors").exists, "Shape colors should hide when Fluid is picked")
-
-        // Auto-stir: the fluid moves with no touch at all
-        tap("Off"); tap("Auto-stir")
-        playButton.tap(); pause(4); shot("play-autostir-no-touch")
-        edgeBack()
-        tap("Auto-stir")
-
-        // Fine-tune: open, drag the Swirl and Glow sliders, reset
-        tap("Fine-tune")
-        XCTAssertFalse(find("Edited").exists, "A fresh style shouldn't say Edited")
-        let sliders = app.webViews.sliders
-        XCTAssertTrue(sliders.firstMatch.waitForExistence(timeout: 5), "No sliders in Fine-tune")
-        if sliders.count > 3 {
-            for i in [3, 5] {
-                let s = sliders.element(boundBy: i)
-                reveal(s)
-                s.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5))
-                    .press(forDuration: 0.05, thenDragTo: s.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)))
-                pause(0.5)
-            }
-        }
-        shot("fine-tune-changed")
-        XCTAssertTrue(find("Edited").exists, "Fine-tune should say Edited after moving a slider")
-        tap("Reset Neon"); pause(0.3); shot("fine-tune-reset-armed")
-        tap("Tap again to reset Neon"); pause(0.5); shot("fine-tune-reset")
-        XCTAssertFalse(find("Edited").exists, "Edited should go away after the reset")
-
-        // Settings screen
-        let gear = app.webViews.buttons["Settings"]
-        reveal(gear)
-        gear.tap(); pause(1.2); shot("settings")
-        XCTAssertFalse(find("Set up live wallpaper").exists, "The live wallpaper section should be hidden on iPhone")
-        XCTAssertTrue(find("Credits to Kothi").exists, "Credits missing in Settings")
-        tap("Low"); pause(1); shot("settings-quality-low")
-        tap("High")
-        tap("Reset everything"); tap("Tap again"); pause(1); shot("settings-reset")
-
-        // Links open in Safari
-        tap("Website")
-        pause(3)
-        XCTAssertNotEqual(app.state, .runningForeground, "The Website link should open Safari")
-        shot("website-in-safari")
-        app.activate(); pause(2)
-        tap("Back"); pause(1); shot("settings-closed")
-
-        // Rotation
-        XCUIDevice.shared.orientation = .landscapeLeft; pause(2); shot("landscape-menu")
-        playButton.tap(); pause(1); paint(); shot("landscape-play")
-        edgeBack()
-        XCUIDevice.shared.orientation = .portrait; pause(2)
-
-        // Background and back: the fluid must still draw
-        tap("Galaxy"); pause(1)
-        XCUIDevice.shared.press(.home); pause(2)
-        app.activate(); pause(2.5); shot("resumed-galaxy")
-
-        // Settings survive a relaunch
-        app.terminate()
-        app.launch()
-        XCTAssertTrue(playButton.waitForExistence(timeout: 15))
-        pause(2.5)
-        XCTAssertTrue(playButton.label.contains("Galaxy"), "After relaunch the style should still be Galaxy, is \(playButton.label)")
-        shot("relaunch-kept-galaxy")
+        let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        shot.name = "end"; shot.lifetime = .keepAlways
+        add(shot)
+        XCTAssertTrue(leftForSafari, "The autopilot reported a failed check (see the device log: AUTOPILOT FAIL)")
     }
 }

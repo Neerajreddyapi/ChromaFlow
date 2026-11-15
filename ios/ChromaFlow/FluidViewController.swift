@@ -22,6 +22,15 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         content.addUserScript(WKUserScript(source: "document.documentElement.style.webkitTextSizeAdjust = '\(textScale)%';",
                                            injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         content.add(WeakMessageHandler(self), name: "chroma")
+        #if DEBUG
+        // Demo and self-test: launch with -autopilot (see Debug/autopilot.js). Debug builds only.
+        if ProcessInfo.processInfo.arguments.contains("-autopilot"),
+           let url = Bundle.main.url(forResource: "autopilot", withExtension: "js"),
+           let js = try? String(contentsOf: url, encoding: .utf8) {
+            content.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+            content.add(AutopilotLog(), name: "autopilot")
+        }
+        #endif
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -79,6 +88,14 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         webView.reload()
     }
 }
+
+#if DEBUG
+private final class AutopilotLog: NSObject, WKScriptMessageHandler {
+    func userContentController(_ c: WKUserContentController, didReceive m: WKScriptMessage) {
+        NSLog("AUTOPILOT %@", String(describing: m.body))
+    }
+}
+#endif
 
 /// WKUserContentController keeps its handlers alive; this breaks the retain cycle.
 private final class WeakMessageHandler: NSObject, WKScriptMessageHandler {
