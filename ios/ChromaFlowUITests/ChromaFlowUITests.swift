@@ -137,14 +137,16 @@ final class ChromaFlowUITests: XCTestCase {
         }
         shot("fine-tune-changed")
         XCTAssertTrue(find("Edited").exists, "Fine-tune should say Edited after moving a slider")
-        tap("Reset Neon"); pause(0.5); shot("fine-tune-reset")
+        tap("Reset Neon"); pause(0.3); shot("fine-tune-reset-armed")
+        tap("Tap again to reset Neon"); pause(0.5); shot("fine-tune-reset")
+        XCTAssertFalse(find("Edited").exists, "Edited should go away after the reset")
 
         // Settings screen
         let gear = app.webViews.buttons["Settings"]
         reveal(gear)
         gear.tap(); pause(1.2); shot("settings")
         XCTAssertFalse(find("Set up live wallpaper").exists, "The live wallpaper section should be hidden on iPhone")
-        XCTAssertTrue(find("Credits to Chinni").exists, "Credits missing in Settings")
+        XCTAssertTrue(find("Credits to Kothi").exists, "Credits missing in Settings")
         tap("Low"); pause(1); shot("settings-quality-low")
         tap("High")
         tap("Reset everything"); tap("Tap again"); pause(1); shot("settings-reset")

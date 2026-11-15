@@ -132,8 +132,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .reset-all{width:100%;height:54px;border-radius:999px;border:1px solid var(--danger-line);background:var(--danger-bg);color:var(--danger);font:600 15px/1 var(--body);cursor:pointer;transition:background .2s,color .2s}
 .reset-all.armed{background:var(--danger);color:var(--void);border-color:var(--danger)}
 .chip{font:600 10.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:rgba(142,246,255,.14);color:var(--accent);margin-left:8px;vertical-align:2px}
-.reset:disabled{opacity:.35}
-.reset{justify-self:start;border:1px solid var(--line);background:transparent;color:var(--fg);font:500 14px/1 var(--body);padding:12px 16px;border-radius:999px}
+.reset-all:disabled{opacity:.35;cursor:default}
 
 .playbar{position:fixed;left:0;right:0;bottom:0;z-index:6;box-sizing:border-box;
   padding:28px max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
@@ -255,7 +254,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
         </div>
         <div><h3>Motion</h3><div class="sliders" id="g-motion"></div></div>
         <div><h3>Brush</h3><div class="sliders" id="g-brush"></div></div>
-        <button class="reset" type="button" id="reset">Reset <span id="reset-for">Neon</span> to default</button>
+        <button class="reset-all" type="button" id="reset">Reset Neon to default</button>
       </div>
     </details>
 
@@ -302,7 +301,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <section>
       <h2>About</h2>
       <div class="panel">
-        <p class="credit-line"><span class="rainbow">Credits to Chinni (Kothi </span><span class="monkey">🐒</span><span class="rainbow">)</span></p>
+        <p class="credit-line"><span class="rainbow">Credits to Kothi (</span><span class="monkey">🐒</span><span class="rainbow">)</span></p>
         <nav class="rows" aria-label="Links">
           <a href="https://chromaflow.vercel.app">Website <small>chromaflow.vercel.app</small></a>
           <a href="https://neerajreddyapi.github.io/ChromaFlow/privacy-policy.html">Privacy policy</a>
@@ -1476,7 +1475,7 @@ function syncUI() {
   $('sec-wp').hidden = !editingWp;
   $('play-label').textContent = editingWp ? 'Set as wallpaper' : 'Play';
   $('tune-for').textContent = style.name;
-  $('reset-for').textContent = style.name;
+  disarmResetStyle();
   SLIDERS.forEach(def => {
     const input = $('s-' + def.key);
     const v = (def.scope === 'opts' ? opts : cfg)[def.key];
@@ -1546,25 +1545,35 @@ Object.keys(QUALITY).forEach(q => $('q-' + q).addEventListener('click', () => {
   syncUI();
   save();
 }));
-$('reset').addEventListener('click', () => {
-  delete tweaks[style.id];
-  cfg = Object.assign({}, DEFAULTS, style);
-  syncUI();
-  save();
-});
+// Reset buttons turn fully red and ask for a second tap, so a stray touch can't wipe anything.
+function twoTapReset(btn, idle, armed, done, action) {
+  let timer = 0;
+  const disarm = () => { clearTimeout(timer); btn.classList.remove('armed'); btn.textContent = idle(); };
+  btn.addEventListener('click', () => {
+    clearTimeout(timer);
+    if (!btn.classList.contains('armed')) {
+      btn.classList.add('armed');
+      btn.textContent = armed();
+      timer = setTimeout(disarm, 3500);
+      return;
+    }
+    action();
+    btn.classList.remove('armed');
+    btn.textContent = done();
+    timer = setTimeout(disarm, 2000);
+  });
+  return disarm;
+}
+const disarmResetStyle = twoTapReset($('reset'),
+  () => `Reset ${style.name} to default`, () => `Tap again to reset ${style.name}`, () => `${style.name} is reset`,
+  () => {
+    delete tweaks[style.id];
+    cfg = Object.assign({}, DEFAULTS, style);
+    syncUI();
+    save();
+  });
 
-// Reset everything asks for a second tap, so a stray touch can't wipe the user's setup.
-const resetAll = $('reset-all');
-let armTimer = 0;
-function disarm() { resetAll.classList.remove('armed'); resetAll.textContent = 'Reset everything'; }
-resetAll.addEventListener('click', () => {
-  clearTimeout(armTimer);
-  if (!resetAll.classList.contains('armed')) {
-    resetAll.classList.add('armed');
-    resetAll.textContent = 'Tap again to reset everything';
-    armTimer = setTimeout(disarm, 3500);
-    return;
-  }
+twoTapReset($('reset-all'), () => 'Reset everything', () => 'Tap again to reset everything', () => 'Everything is reset', () => {
   tweaks = {};
   custom = DEFAULT_CUSTOM.slice();
   opts = Object.assign({}, DEFAULT_OPTS);
@@ -1572,9 +1581,6 @@ resetAll.addEventListener('click', () => {
   colorSource = 'style';
   if (quality !== DEFAULT_QUALITY) { quality = DEFAULT_QUALITY; initFramebuffers(); }
   selectStyle(STYLES.indexOf(style));
-  resetAll.classList.remove('armed');
-  resetAll.textContent = 'Everything is reset';
-  armTimer = setTimeout(disarm, 2000);
 });
 
 /* ---------- Settings screen ---------- */

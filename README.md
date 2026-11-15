@@ -107,7 +107,7 @@ Chroma Flow collects nothing. Read the [privacy policy](https://neerajreddyapi.g
 
 ## Credits
 
-- Credits to Chinni (Kothi 🐒).
+- Credits to Kothi (🐒).
 - The fluid solver is adapted from [WebGL Fluid Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation) by Pavel Dobryakov (MIT).
 - Title font: [Unbounded](https://github.com/googlefonts/unbounded) (SIL Open Font License 1.1).
 

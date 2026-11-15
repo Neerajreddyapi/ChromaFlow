@@ -11,6 +11,8 @@ All notable changes to Chroma Flow are listed here. Versions follow `versionName
 - Play options (symmetry, tilt, auto-stir, tap to splash) fold away like Fine-tune, with a one-line summary of what's on.
 - Fine-tune shows an "Edited" tag when a style differs from how the app came, and Reset only works then.
 - On iPhone the hints say "Swipe in from the left edge" instead of "Swipe back".
+- Every style's "Reset to default" button is red and asks for a second tap (it turns fully red first), like Reset everything.
+- The credit now reads "Credits to Kothi (🐒)", with the monkey still swinging.
 
 ## [1.3.4] - 2026-11-15
 
