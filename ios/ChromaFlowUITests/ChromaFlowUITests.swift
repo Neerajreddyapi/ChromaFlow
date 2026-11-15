@@ -55,6 +55,16 @@ final class ChromaFlowUITests: XCTestCase {
         }
     }
 
+    /// Taps a button inside a labelled button group, opening Play options first if needed.
+    private func groupTap(_ group: String, _ name: String, file: StaticString = #filePath, line: UInt = #line) {
+        let el = app.webViews.otherElements[group].buttons[name]
+        if !el.exists || el.frame.height < 4 { tap("Play options") }
+        guard el.waitForExistence(timeout: 6) else {
+            XCTFail("Couldn't find “\(name)” in “\(group)”", file: file, line: line); return
+        }
+        reveal(el); el.tap(); pause(0.6)
+    }
+
     private func stroke(_ a: CGVector, _ b: CGVector) {
         let w = app.windows.firstMatch
         w.coordinate(withNormalizedOffset: a).press(forDuration: 0.05, thenDragTo: w.coordinate(withNormalizedOffset: b))
@@ -114,6 +124,18 @@ final class ChromaFlowUITests: XCTestCase {
                       "Play options summary should mention Kaleido")
         playButton.tap(); pause(1); paint(); shot("play-kaleido")
         edgeBack()
+
+        // Touch shapes: only the picked shape appears, no fluid; every shape and color option
+        for name in ["Hearts", "Bubbles", "Stars", "Sparkles"] {
+            groupTap("Touch shapes", name)
+            if name == "Hearts" { groupTap("Shape colors", "Rainbow") } else if name == "Stars" { groupTap("Shape colors", "Fluid colors") }
+            playButton.tap(); pause(1); paint()
+            app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()  // tap burst
+            pause(0.4); shot("shapes-" + name.lowercased())
+            edgeBack()
+        }
+        groupTap("Touch shapes", "Fluid"); pause(0.5)
+        XCTAssertFalse(find("Shape colors").exists, "Shape colors should hide when Fluid is picked")
 
         // Auto-stir: the fluid moves with no touch at all
         tap("Off"); tap("Auto-stir")
