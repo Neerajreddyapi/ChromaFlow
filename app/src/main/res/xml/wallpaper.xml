@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shown in the phone's wallpaper picker. Settings opens the app, where the wallpaper is set up. -->
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:thumbnail="@mipmap/ic_launcher"
+    android:description="@string/wallpaper_description"
+    android:settingsActivity="com.chromaflow.app.MainActivity" />

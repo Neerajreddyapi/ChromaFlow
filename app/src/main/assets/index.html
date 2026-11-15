@@ -41,23 +41,40 @@ body{background:var(--void);color:var(--fg);font-family:var(--body);-webkit-font
   display:grid;gap:30px}
 .hero{position:relative;display:grid;gap:12px;padding-block:8px 10px}
 .hero h1{margin:0;font-family:var(--logo);font-weight:600;font-size:clamp(44px,13vw,84px);line-height:.92;letter-spacing:-.03em;text-shadow:0 2px 24px rgba(0,0,0,.45)}
-.info{position:absolute;z-index:3;top:10px;right:0;width:40px;height:40px;padding:0;border-radius:50%;border:1.5px solid var(--line-strong);background:rgba(17,19,29,.55);color:var(--fg);font:italic 700 19px/1 Georgia,serif;cursor:pointer;
-  transition:transform .7s cubic-bezier(.34,1.56,.64,1),box-shadow .4s,border-color .3s}
-/* Open: the button spins into a rainbow disc and the bubble springs out of it. */
-.info[aria-expanded="true"]{transform:rotate(360deg) scale(1.08);border-color:transparent;text-shadow:0 1px 3px rgba(0,0,0,.6);
-  background:conic-gradient(#ff2a6d,#ffb000,#b6ff3d,#05d9e8,#6a5cff,#ff2a6d);box-shadow:0 0 22px rgba(255,90,200,.55),0 0 44px rgba(5,217,232,.3)}
-.credit{position:absolute;z-index:3;top:62px;right:0;padding:12px 18px;border-radius:16px;border:1.5px solid transparent;white-space:nowrap;font:500 15px/1.3 var(--body);
-  background:linear-gradient(#1e2130,#1e2130) padding-box,linear-gradient(90deg,#ff2a6d,#ffb000,#b6ff3d,#05d9e8,#6a5cff,#ff2a6d) 0 0/200% 100% border-box;
-  box-shadow:0 12px 32px rgba(0,0,0,.5);animation:rainbow-border 2.5s linear infinite;
-  transform-origin:calc(100% - 20px) -20px;opacity:0;visibility:hidden;transform:translateY(-10px) scale(.3) rotate(10deg);filter:blur(6px);
-  transition:opacity .2s,transform .3s ease-in,filter .3s,visibility 0s linear .3s}
-.credit.on{opacity:1;visibility:visible;transform:none;filter:none;
-  transition:opacity .2s,transform .6s cubic-bezier(.34,1.7,.5,1),filter .35s,visibility 0s}
+/* Settings gear, top right of the home page. */
+.gear{position:absolute;z-index:3;top:10px;right:0;width:44px;height:44px;padding:0;display:grid;place-items:center;border-radius:50%;border:1.5px solid var(--line-strong);background:rgba(17,19,29,.55);color:var(--fg);cursor:pointer}
+.gear svg{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.gear:active svg{transform:rotate(90deg)}
+.back{justify-self:start;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(17,19,29,.55);color:var(--fg);font:500 15px/1 var(--body);padding:11px 18px 11px 14px;border-radius:999px;cursor:pointer}
+/* Settings: a screen over the menu. */
+.sheet{z-index:7;background:var(--void)}
+.sheet .menu-inner{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.sheet-title{margin:4px 0 0;font-family:var(--logo);font-weight:600;font-size:44px;line-height:1;letter-spacing:-.03em}
+.wide{width:100%;height:52px;border-radius:999px;border:0;background:var(--fg);color:var(--void);font:600 15px/1 var(--body);cursor:pointer;transition:transform .15s}
+.wide:active{transform:scale(.98)}
+.credit-line{margin:0;font:500 17px/1.4 var(--body)}
+.credit-line .monkey{animation:swing 1.6s ease-in-out infinite}
+.rows{display:grid;margin-top:4px}
+.rows a{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 2px;border-top:1px solid var(--line);color:var(--fg);text-decoration:none;font-size:15px}
+.rows a small{color:var(--muted);font-size:13px}
+.rows a small{margin-left:auto}
+.rows a::after{content:"\203A";color:var(--muted);font-size:20px;line-height:1;margin-left:auto}
+.rows a:has(small)::after{margin-left:0}
+/* "Show it on": home, lock or both, asked each time a wallpaper is set. */
+.where{position:fixed;inset:0;z-index:9;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);transition:opacity .25s,visibility 0s linear 0s}
+.where.away{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s,visibility 0s linear .25s}
+.where-card{width:100%;max-width:520px;box-sizing:border-box;display:grid;gap:8px;margin:0 12px calc(12px + env(safe-area-inset-bottom,0px));padding:20px 16px 14px;border-radius:24px;background:#151826;border:1px solid var(--line);transform:translateY(0);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+.where.away .where-card{transform:translateY(40px)}
+.where-card h3{margin:0 4px 8px;font:600 18px/1.3 var(--body)}
+.where-card button{display:flex;align-items:center;gap:14px;width:100%;padding:15px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);font:500 16px/1.2 var(--body);text-align:left;cursor:pointer}
+.where-card button:active{background:rgba(255,255,255,.1)}
+.where-card button svg{flex:none;color:var(--muted)}
+.where-card .where-cancel{justify-content:center;border:0;background:transparent;color:var(--muted);margin-top:2px}
+.toast{position:fixed;z-index:8;left:50%;bottom:calc(112px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:calc(100% - 36px);box-sizing:border-box;padding:12px 18px;border-radius:16px;background:rgba(30,33,48,.96);border:1px solid var(--line);font-size:14px;line-height:1.4;text-align:center;pointer-events:none;opacity:0;transition:opacity .4s}
+.toast.on{opacity:1}
 .rainbow{font-weight:700;background:linear-gradient(90deg,#ff2a6d,#ffb000,#b6ff3d,#05d9e8,#6a5cff,#ff2a6d);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rainbow 2.5s linear infinite}
 .monkey{display:inline-block;transform-origin:50% 90%}
-.credit.on .monkey{animation:swing 1.6s ease-in-out .3s infinite}
 @keyframes rainbow{to{background-position:200% 0}}
-@keyframes rainbow-border{to{background-position:0 0,200% 0}}
 @keyframes swing{0%,100%{transform:rotate(0)}25%{transform:rotate(-16deg) translateY(-2px)}75%{transform:rotate(16deg) translateY(-2px)}}
 .hero p{margin:0;max-width:34ch;font-size:16px;line-height:1.45;color:var(--fg);opacity:.82}
 .menu h2{margin:0 0 12px;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -80,9 +97,7 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0}
 input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
 .bgpick{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted)}
 .note{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
-.links{display:flex;justify-content:center;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
-.links a{color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:8px 2px}
-.crafted{margin:-18px 0 0;text-align:center;font-size:13px;letter-spacing:.04em;color:var(--muted);opacity:.8}
+.crafted{margin:-14px 0 0;text-align:center;font-size:13px;letter-spacing:.04em;color:var(--muted);opacity:.8}
 
 .tune{border-radius:18px;background:var(--card);border:1px solid var(--line)}
 .tune summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;cursor:pointer}
@@ -124,6 +139,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .playbar.away{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility 0s linear .35s}
 .play{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:760px;margin:0 auto;height:60px;border:0;border-radius:999px;background:var(--fg);color:var(--void);font:600 17px/1 var(--body);letter-spacing:.02em;cursor:pointer;transition:transform .15s}
 .play:active{transform:scale(.98)}
+.play b{font-weight:600}
 .play span{font:500 15px/1 var(--body);opacity:.6}
 
 .playhint{position:fixed;z-index:4;left:50%;bottom:calc(40px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:rgba(17,19,29,.8);border:1px solid var(--line);font-size:14px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .6s}
@@ -142,10 +158,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 <main class="menu" id="menu">
   <div class="menu-inner">
     <header class="hero">
-      <h1>Chroma<br>Flow</h1>
-      <button class="info" type="button" id="info" aria-label="Credits" aria-expanded="false" aria-controls="credit">i</button>
-      <span class="credit" id="credit" role="status"><span class="rainbow">Credits to Chinni (Kothi </span><span class="monkey">🐒</span><span class="rainbow">)</span></span>
-      <p>Pick a style and your colors, then tap Play. Swipe back any time to come back here.</p>
+      <button class="back" type="button" id="wp-back" hidden>&#8249; Back</button>
+      <h1 id="title">Chroma<br>Flow</h1>
+      <button class="gear" type="button" id="open-settings" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <p id="lede"></p>
     </header>
 
     <section>
@@ -172,7 +188,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </section>
 
-    <section>
+    <section id="sec-play">
       <h2>Play mode</h2>
       <div class="panel">
         <div class="field">
@@ -187,6 +203,40 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
         <div class="sliders" id="g-play"></div>
         <label class="switch"><span>Auto-stir<small>The fluid keeps moving on its own while you play</small></span><input type="checkbox" id="t-auto"></label>
         <label class="switch"><span>Tap to splash<small>A single tap drops a blob of color</small></span><input type="checkbox" id="t-tap"></label>
+      </div>
+    </section>
+
+    <section id="sec-wp" hidden>
+      <h2>Wallpaper</h2>
+      <div class="panel">
+        <label class="switch"><span>Stir on its own on the home screen<small>Flows by itself while you're not touching it and pauses while you swipe. Off: it only moves with your finger.</small></span><input type="checkbox" id="wp-auto"></label>
+        <p class="note">On the lock screen it always stirs on its own.</p>
+        <div class="field">
+          <span class="field-label">Symmetry<small>Every stroke is copied around the screen</small></span>
+          <div class="seg" role="group" aria-label="Wallpaper symmetry">
+            <button type="button" id="wsym-1">Off</button>
+            <button type="button" id="wsym-2">Mirror</button>
+            <button type="button" id="wsym-4">4-way</button>
+            <button type="button" id="wsym-6">Kaleido</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Quality<small>Higher is sharper but uses more battery</small></span>
+          <div class="seg" role="group" aria-label="Wallpaper quality">
+            <button type="button" id="wq-low">Low</button>
+            <button type="button" id="wq-medium">Medium</button>
+            <button type="button" id="wq-high">High</button>
+            <button type="button" id="wq-ultra">Ultra</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Smoothness<small>Smooth looks nicer, Battery saver lasts longer</small></span>
+          <div class="seg" role="group" aria-label="Wallpaper smoothness">
+            <button type="button" id="wp-fps-30">Battery saver</button>
+            <button type="button" id="wp-fps-60">Smooth</button>
+          </div>
+        </div>
+        <p class="note">Fine-tune below is shared with the app: changing a style here changes it in Play too.</p>
       </div>
     </section>
 
@@ -207,6 +257,28 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </details>
 
+  </div>
+</main>
+
+<div class="playbar" id="playbar">
+  <button class="play" type="button" id="play"><b id="play-label">Play</b> <span id="play-style">Neon</span></button>
+</div>
+
+<main class="menu sheet away" id="settings" aria-label="Settings">
+  <div class="menu-inner">
+    <header class="hero">
+      <button class="back" type="button" id="settings-close">&#8249; Back</button>
+      <h1 class="sheet-title">Settings</h1>
+    </header>
+
+    <section id="set-wp" hidden>
+      <h2>Live wallpaper</h2>
+      <div class="panel">
+        <p class="note" id="wp-status"></p>
+        <button class="wide" type="button" id="wp-open">Set up live wallpaper</button>
+      </div>
+    </section>
+
     <section>
       <h2>Quality</h2>
       <div class="panel">
@@ -225,20 +297,30 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       <p class="note">Puts every style, slider, color and switch back to how the app came.</p>
     </section>
 
-    <footer class="links">
-      <a href="https://chromaflow.vercel.app">Website</a>
-      <span aria-hidden="true">·</span>
-      <a href="https://neerajreddyapi.github.io/ChromaFlow/privacy-policy.html">Privacy policy</a>
-      <span aria-hidden="true">·</span>
-      <a href="https://github.com/Neerajreddyapi/ChromaFlow">Source code</a>
-    </footer>
+    <section>
+      <h2>About</h2>
+      <div class="panel">
+        <p class="credit-line"><span class="rainbow">Credits to Chinni (Kothi </span><span class="monkey">🐒</span><span class="rainbow">)</span></p>
+        <nav class="rows" aria-label="Links">
+          <a href="https://chromaflow.vercel.app">Website <small>chromaflow.vercel.app</small></a>
+          <a href="https://neerajreddyapi.github.io/ChromaFlow/privacy-policy.html">Privacy policy</a>
+          <a href="https://github.com/Neerajreddyapi/ChromaFlow">Source code <small>GitHub</small></a>
+        </nav>
+      </div>
+    </section>
     <p class="crafted">Crafted by Neeraj Reddy</p>
   </div>
 </main>
-
-<div class="playbar" id="playbar">
-  <button class="play" type="button" id="play">Play <span id="play-style">Neon</span></button>
+<div class="where away" id="where" role="dialog" aria-modal="true" aria-labelledby="where-title">
+  <div class="where-card">
+    <h3 id="where-title">Show it on</h3>
+    <button type="button" data-where="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home screen</button>
+    <button type="button" data-where="lock"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Lock screen</button>
+    <button type="button" data-where="both"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 18h4"/></svg>Home and lock screen</button>
+    <button type="button" class="where-cancel" id="where-cancel">Cancel</button>
+  </div>
 </div>
+<div class="toast" id="toast" role="status"></div>
 <div class="playhint" id="playhint">Swipe back to return to the menu</div>
 
 <div class="nogl" id="nogl" hidden><p><b>Can't start the fluid</b>This phone's browser engine didn't give us WebGL with half-float textures. Update "Android System WebView" from the Play Store and try again.</p></div>
@@ -303,6 +385,8 @@ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (
 const DEFAULT_QUALITY = 'high';
 const DEFAULT_CUSTOM = ['#ff3d7f', '#ffd23f', '#3bceac', '#6a4cff'];
 const DEFAULT_OPTS = { auto:false, symmetry:1, tilt:0, tapSplash:true };
+// Live wallpaper: its own style, colors and switches. Style and colors start from the app's on first use.
+const DEFAULT_WP = { style:null, source:null, symmetry:1, quality:'medium', auto:true, fps:30 };
 let quality = DEFAULT_QUALITY;
 let style = STYLES[0];
 let cfg = Object.assign({}, DEFAULTS, style);
@@ -310,6 +394,7 @@ let colorSource = 'rainbow';
 let custom = DEFAULT_CUSTOM.slice();
 let opts = Object.assign({}, DEFAULT_OPTS);
 let tweaks = {};  // per-style slider and switch changes, keyed by style id
+let wp = Object.assign({}, DEFAULT_WP);
 let playing = false, time = 0;
 
 let saved = {};
@@ -319,8 +404,13 @@ if (QUALITY[saved.quality]) quality = saved.quality;
 if (saved.opts && typeof saved.opts === 'object') Object.assign(opts, saved.opts);
 else if (saved.auto === true) opts.auto = true;
 if (saved.tweaks && typeof saved.tweaks === 'object') tweaks = saved.tweaks;
+if (saved.wp && typeof saved.wp === 'object') Object.assign(wp, saved.wp);
+if (!QUALITY[wp.quality]) wp.quality = DEFAULT_WP.quality;
+let held = null;  // while the menu edits the wallpaper: the app's own style and color source, kept aside
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify({ style: style.id, custom, source: colorSource, quality, opts, tweaks })); } catch (e) {}
+  if (held) { wp.style = style.id; wp.source = colorSource; }
+  const app = held || { style, colorSource };
+  try { localStorage.setItem(KEY, JSON.stringify({ style: app.style.id, custom, source: app.colorSource, quality, opts, tweaks, wp })); } catch (e) {}
 }
 
 /* ---------- Tilt ---------- */
@@ -1355,6 +1445,17 @@ const SYMMETRIES = [1, 2, 4, 6];
 function syncUI() {
   grid.querySelectorAll('.card').forEach(b => b.setAttribute('aria-pressed', String(b.id === 'style-' + style.id)));
   $('play-style').textContent = style.name;
+  // The same menu edits either the app (Play) or the live wallpaper.
+  const editingWp = !!held;
+  $('title').innerHTML = editingWp ? 'Live<br>wallpaper' : 'Chroma<br>Flow';
+  $('lede').textContent = editingWp
+    ? 'Pick the style, colors and settings for your wallpaper. The fluid behind this menu is the preview.'
+    : 'Pick a style and your colors, then tap Play. Swipe back any time to come back here.';
+  $('wp-back').hidden = !editingWp;
+  $('open-settings').hidden = editingWp;
+  $('sec-play').hidden = editingWp;
+  $('sec-wp').hidden = !editingWp;
+  $('play-label').textContent = editingWp ? 'Set as wallpaper' : 'Play';
   $('tune-for').textContent = style.name;
   $('reset-for').textContent = style.name;
   SLIDERS.forEach(def => {
@@ -1382,6 +1483,7 @@ function syncUI() {
   Object.keys(QUALITY).forEach(q => $('q-' + q).setAttribute('aria-pressed', String(quality === q)));
   custom.forEach((c, i) => { $('c' + i).value = c; });
   $('cbg').value = cfg.bg;
+  syncWp();
 }
 
 function styleConfig(s) { return Object.assign({}, DEFAULTS, s, tweaks[s.id]); }
@@ -1445,6 +1547,7 @@ resetAll.addEventListener('click', () => {
   tweaks = {};
   custom = DEFAULT_CUSTOM.slice();
   opts = Object.assign({}, DEFAULT_OPTS);
+  wp = Object.assign({}, DEFAULT_WP);
   colorSource = 'style';
   if (quality !== DEFAULT_QUALITY) { quality = DEFAULT_QUALITY; initFramebuffers(); }
   selectStyle(STYLES.indexOf(style));
@@ -1453,13 +1556,108 @@ resetAll.addEventListener('click', () => {
   armTimer = setTimeout(disarm, 2000);
 });
 
-/* ---------- Credits ---------- */
-// The "i" beside the title toggles the credit; a tap anywhere else closes it.
-const info = $('info'), credit = $('credit');
-const creditOpen = () => credit.classList.contains('on');
-function showCredit(on) { credit.classList.toggle('on', on); info.setAttribute('aria-expanded', String(on)); }
-info.addEventListener('click', () => showCredit(!creditOpen()));
-document.addEventListener('pointerdown', e => { if (creditOpen() && e.target !== info) showCredit(false); });
+/* ---------- Settings screen ---------- */
+const settings = $('settings');
+const settingsOpen = () => !settings.classList.contains('away');
+function openSettings() {
+  syncWp();
+  settings.scrollTop = 0;
+  settings.classList.remove('away');
+}
+function closeSettings() { settings.classList.add('away'); }
+$('open-settings').addEventListener('click', openSettings);
+$('settings-close').addEventListener('click', closeSettings);
+
+let toastTimer = 0;
+function toast(text) {
+  const t = $('toast');
+  t.textContent = text;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 3200);
+}
+
+/* ---------- Live wallpaper ---------- */
+// Only in the Android app. "Set up live wallpaper" turns the menu into the wallpaper editor:
+// Style, Colors and Fine-tune then change the wallpaper's look (previewed behind the menu),
+// and the bottom button asks where to show it (home, lock or both). Back returns to the app's own
+// style. The app asks itself because some phones (OnePlus) set home, lock and always-on display
+// together in their own wallpaper screen.
+const wpOn = !!(bridge && bridge.setWallpaper);
+const wpActive = () => wpOn && bridge.wallpaperActive();
+const WP_SYMS = [1, 2, 4, 6], WP_FPS = [30, 60];
+function syncWp() {
+  if (!wpOn) return;
+  $('wp-status').textContent = wpActive()
+    ? 'Chroma Flow is your wallpaper. Open the setup to change how it looks.'
+    : 'Put living fluid art on your home and lock screen. Swipe your home screen to stir it.';
+  $('wp-open').textContent = wpActive() ? 'Change live wallpaper' : 'Set up live wallpaper';
+  $('wp-auto').checked = wp.auto;
+  WP_SYMS.forEach(n => $('wsym-' + n).setAttribute('aria-pressed', String(wp.symmetry === n)));
+  Object.keys(QUALITY).forEach(q => $('wq-' + q).setAttribute('aria-pressed', String(wp.quality === q)));
+  WP_FPS.forEach(f => $('wp-fps-' + f).setAttribute('aria-pressed', String(wp.fps === f)));
+}
+function editWallpaper() {
+  if (held) return;
+  held = { style, colorSource };
+  if (!wp.style || !STYLES.some(s => s.id === wp.style)) { wp.style = style.id; wp.source = colorSource; }
+  const source = wp.source;
+  closeSettings();
+  selectStyle(STYLES.findIndex(s => s.id === wp.style));
+  if (['style', 'rainbow', 'custom'].includes(source)) setColorSource(source);
+  $('menu').scrollTop = 0;
+}
+function stopEditingWallpaper() {
+  if (!held) return;
+  const app = held;
+  save();
+  held = null;
+  selectStyle(STYLES.indexOf(app.style));
+  setColorSource(app.colorSource);
+  $('menu').scrollTop = 0;
+}
+function wallpaperLook() {
+  const colors = activePalette().slice();
+  if (colorSource === 'custom' && cfg.mode === 1) colors.sort((a, b) => luma(hexToRgb(a)) - luma(hexToRgb(b)));
+  if (colorSource === 'custom' && cfg.mode === 3) colors.sort((a, b) => luma(hexToRgb(b)) - luma(hexToRgb(a)));
+  return JSON.stringify({ style: style.id, cfg, source: colorSource, colors, quality: wp.quality, symmetry: wp.symmetry, tapSplash: true });
+}
+const WHERE_TEXT = { home: 'home screen', lock: 'lock screen', both: 'home and lock screen' };
+let lastWhere = 'both';
+const whereSheet = $('where');
+const whereOpen = () => !whereSheet.classList.contains('away');
+function askWhere() {
+  $('where-title').textContent = `Show ${style.name} on`;
+  whereSheet.classList.remove('away');
+}
+function closeWhere() { whereSheet.classList.add('away'); }
+function setWallpaper(where) {
+  closeWhere();
+  lastWhere = where;
+  save();
+  const result = bridge.setWallpaper(wallpaperLook(), JSON.stringify({ auto: wp.auto, fps: wp.fps }), where);
+  if (result === 'updated') toast(`Your ${WHERE_TEXT[where]} now shows ${style.name}.`);
+}
+whereSheet.querySelectorAll('[data-where]').forEach(b => b.addEventListener('click', () => setWallpaper(b.dataset.where)));
+$('where-cancel').addEventListener('click', closeWhere);
+whereSheet.addEventListener('click', e => { if (e.target === whereSheet) closeWhere(); });
+if (wpOn) {
+  $('set-wp').hidden = false;
+  $('wp-open').addEventListener('click', editWallpaper);
+  $('wp-back').addEventListener('click', stopEditingWallpaper);
+  $('wp-auto').addEventListener('change', e => { wp.auto = e.target.checked; save(); });
+  WP_SYMS.forEach(n => $('wsym-' + n).addEventListener('click', () => { wp.symmetry = n; save(); syncWp(); }));
+  Object.keys(QUALITY).forEach(q => $('wq-' + q).addEventListener('click', () => { wp.quality = q; save(); syncWp(); }));
+  WP_FPS.forEach(f => $('wp-fps-' + f).addEventListener('click', () => { wp.fps = f; save(); syncWp(); }));
+  window.chromaWallpaperFailed = () => toast("This phone doesn't support live wallpapers.");
+  // Called when the phone's wallpaper screen closes: set, or backed out without changing it.
+  window.chromaWallpaperDone = applied => {
+    syncUI();
+    toast(applied ? `Your ${WHERE_TEXT[lastWhere]} now shows ${style.name}.` : 'Wallpaper not changed.');
+  };
+  // Coming back from the phone's wallpaper screen: refresh the buttons.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) syncUI(); });
+}
 
 /* ---------- Screens ---------- */
 const menu = $('menu'), playbar = $('playbar'), playhint = $('playhint');
@@ -1486,15 +1684,19 @@ function showMenu() {
   playbar.classList.remove('away');
   if (bridge) bridge.setPlaying(false);
 }
-// Called by the Android Back gesture. Returns true when it handled the back press.
+// Called by the Android Back gesture. Returns true when it handled the back press
+// (false lets the app close).
 window.chromaBack = function () {
   if (playing) { showMenu(); return true; }
+  if (wpOn && whereOpen()) { closeWhere(); return true; }
+  if (settingsOpen()) { closeSettings(); return true; }
+  if (held) { stopEditingWallpaper(); return true; }
   return false;
 };
-$('play').addEventListener('click', startPlay);
+$('play').addEventListener('click', () => { if (held) askWhere(); else startPlay(); });
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') window.chromaBack();
-  else if (e.key === 'Enter' && !playing && !(e.target instanceof HTMLInputElement)) startPlay();
+  else if (e.key === 'Enter' && !playing && !held && !settingsOpen() && !(e.target instanceof HTMLInputElement)) startPlay();
 });
 
 /* ---------- Start ---------- */

@@ -28,12 +28,17 @@ There are no APK downloads on GitHub. Please install Chroma Flow from Google Pla
 - **10 styles:** Neon, Smoke, Ocean, Waves, Fire, Ink, Aurora, Lava, Galaxy and Chrome, each with its own look (glow, heat, ripples, liquid metal, ink on paper, water with caustics).
 - **Your colors:** use the style's palette, a rainbow, or pick four of your own plus the background.
 - **Play mode:** a bare full-screen canvas with nothing on top. Mirror, 4-way and kaleidoscope symmetry, tilt your phone to pour, auto-stir, tap to splash.
+- **Live wallpaper:** put any style on your home and lock screen, with its own colors, symmetry, quality and smoothness. On the home screen it stirs itself while you're not touching it and follows your finger when you swipe; on the lock screen it always stirs itself.
 - **Fine-tune each style:** brightness, color intensity, glow, swirl, how long color lasts, brush size and more. Each style remembers its own settings.
 - **Private by design:** no internet permission, no permissions at all, no ads, no tracking.
 
 ## How it works
 
-The whole app is a full-screen WebView over [`app/src/main/assets/index.html`](app/src/main/assets/index.html), which holds the WebGL fluid engine and the menu. [`MainActivity.java`](app/src/main/java/com/chromaflow/app/MainActivity.java) only handles full screen, the Back gesture (play → menu → exit), keep-screen-on while playing, and the system font size.
+The whole app is a full-screen WebView over [`app/src/main/assets/index.html`](app/src/main/assets/index.html), which holds the WebGL fluid engine, the menu and the Settings screen. [`MainActivity.java`](app/src/main/java/com/chromaflow/app/MainActivity.java) only handles full screen, the Back gesture, keep-screen-on while playing, the system font size, and saving the wallpaper settings.
+
+A live wallpaper can't host a WebView, so the wallpaper ([`FluidWallpaperService.java`](app/src/main/java/com/chromaflow/app/FluidWallpaperService.java)) runs a native OpenGL ES 3 port of the same engine ([`FluidRenderer.java`](app/src/main/java/com/chromaflow/app/FluidRenderer.java)) with the shaders copied unchanged ([`Shaders.java`](app/src/main/java/com/chromaflow/app/Shaders.java)). If you change the engine in `index.html`, change it there too. It only draws while visible, at 30 or 60 frames a second.
+
+`./gradlew assembleDebug` builds a test APK with the package `com.neerajreddy.chromaflow.test` ("Chroma Flow Test"), so it installs next to the Play version.
 
 ## Development setup
 

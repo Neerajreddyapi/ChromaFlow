@@ -2,9 +2,15 @@
 
 All notable changes to Chroma Flow are listed here. Versions follow `versionName` in `app/build.gradle.kts`.
 
-## [1.3.4] - 2026-11-14
+## [1.3.4] - 2026-11-15
+
+### Added
+- Live wallpaper. Settings → Set up live wallpaper turns the menu into the wallpaper setup: pick the style, colors and Fine-tune with a live preview, plus symmetry, quality and smoothness (battery saver 30 fps or smooth 60 fps), then tap Set as wallpaper and choose home screen, lock screen or both (the app asks every time). The home and lock screen keep their own looks. Once Chroma Flow is the wallpaper, changes apply straight away; the phone's wallpaper screen only opens to set it the first time. On phones that put one wallpaper on both screens (like OnePlus), it shows the lock look while locked and the home look once unlocked. On the home screen it stirs itself while you're not touching it (this can be turned off), pauses while you swipe so your strokes take over, and picks up again after you let go. On the lock screen it always stirs itself.
+- A Settings screen behind the gear at the top of the menu, with Live wallpaper, Quality, Reset everything, the credits, and the Website, Privacy policy and Source code links.
 
 ### Changed
+- Quality, Reset everything, the credits and the links moved from the menu to Settings. The "i" credits button is replaced by the Settings gear.
+- Back now also closes Settings and the wallpaper setup.
 - Every style now starts with Glow at 10% (it was up to 45%), so colors look clean instead of hazy. Ink keeps no glow. Glow you changed yourself is kept.
 
 ## [1.3.3] - 2026-11-02

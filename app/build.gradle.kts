@@ -22,6 +22,7 @@ android {
         targetSdk = 36
         versionCode = 8
         versionName = "1.3.4"
+        manifestPlaceholders["appLabel"] = "Chroma Flow"
     }
 
     signingConfigs {
@@ -36,6 +37,12 @@ android {
     }
 
     buildTypes {
+        // Test build for trying changes on a phone that has the Play version: it installs
+        // beside it as "Chroma Flow Test" instead of clashing with it.
+        debug {
+            applicationIdSuffix = ".test"
+            manifestPlaceholders["appLabel"] = "Chroma Flow Test"
+        }
         release {
             isMinifyEnabled = false
             signingConfig = if (keystorePropsFile.exists()) signingConfigs.getByName("upload")
