@@ -107,8 +107,11 @@ final class ChromaFlowUITests: XCTestCase {
         if app.buttons["Close"].exists { app.buttons["Close"].tap(); pause(1) }
         tap("Style"); pause(0.5)
 
-        // Symmetry + play
-        tap("Neon"); tap("Kaleido")
+        // Play options start folded; open them, then symmetry + play
+        tap("Neon"); tap("Play options"); pause(0.5); shot("play-options-open")
+        tap("Kaleido")
+        XCTAssertTrue(find("Play options").label.contains("Kaleido") || app.webViews.staticTexts["Kaleido · Tap to splash"].exists,
+                      "Play options summary should mention Kaleido")
         playButton.tap(); pause(1); paint(); shot("play-kaleido")
         edgeBack()
 
@@ -120,6 +123,7 @@ final class ChromaFlowUITests: XCTestCase {
 
         // Fine-tune: open, drag the Swirl and Glow sliders, reset
         tap("Fine-tune")
+        XCTAssertFalse(find("Edited").exists, "A fresh style shouldn't say Edited")
         let sliders = app.webViews.sliders
         XCTAssertTrue(sliders.firstMatch.waitForExistence(timeout: 5), "No sliders in Fine-tune")
         if sliders.count > 3 {
@@ -132,6 +136,7 @@ final class ChromaFlowUITests: XCTestCase {
             }
         }
         shot("fine-tune-changed")
+        XCTAssertTrue(find("Edited").exists, "Fine-tune should say Edited after moving a slider")
         tap("Reset Neon"); pause(0.5); shot("fine-tune-reset")
 
         // Settings screen

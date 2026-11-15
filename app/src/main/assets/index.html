@@ -131,6 +131,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .danger{display:grid;gap:10px}
 .reset-all{width:100%;height:54px;border-radius:999px;border:1px solid var(--danger-line);background:var(--danger-bg);color:var(--danger);font:600 15px/1 var(--body);cursor:pointer;transition:background .2s,color .2s}
 .reset-all.armed{background:var(--danger);color:var(--void);border-color:var(--danger)}
+.chip{font:600 10.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:rgba(142,246,255,.14);color:var(--accent);margin-left:8px;vertical-align:2px}
+.reset:disabled{opacity:.35}
 .reset{justify-self:start;border:1px solid var(--line);background:transparent;color:var(--fg);font:500 14px/1 var(--body);padding:12px 16px;border-radius:999px}
 
 .playbar{position:fixed;left:0;right:0;bottom:0;z-index:6;box-sizing:border-box;
@@ -188,9 +190,9 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </section>
 
-    <section id="sec-play">
-      <h2>Play mode</h2>
-      <div class="panel">
+    <details class="tune" id="sec-play">
+      <summary><span><b>Play options</b><small id="play-sum"></small></span><i aria-hidden="true">+</i></summary>
+      <div class="tune-body">
         <div class="field">
           <span class="field-label">Symmetry<small>Every stroke is copied around the screen</small></span>
           <div class="seg" role="group" aria-label="Symmetry">
@@ -204,7 +206,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
         <label class="switch"><span>Auto-stir<small>The fluid keeps moving on its own while you play</small></span><input type="checkbox" id="t-auto"></label>
         <label class="switch"><span>Tap to splash<small>A single tap drops a blob of color</small></span><input type="checkbox" id="t-tap"></label>
       </div>
-    </section>
+    </details>
 
     <section id="sec-wp" hidden>
       <h2>Wallpaper</h2>
@@ -241,7 +243,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     </section>
 
     <details class="tune" id="tune">
-      <summary><span><b>Fine-tune <span id="tune-for">Neon</span></b><small>Look, motion and brush for this style</small></span><i aria-hidden="true">+</i></summary>
+      <summary><span><b>Fine-tune <span id="tune-for">Neon</span><em class="chip" id="tune-edited" hidden>Edited</em></b><small>Look, motion and brush for this style</small></span><i aria-hidden="true">+</i></summary>
       <div class="tune-body">
         <p class="note">Each style remembers its own settings. Watch the fluid behind this menu to see your changes live.</p>
         <div>
@@ -1326,6 +1328,7 @@ function frame() {
 /* ---------- UI ---------- */
 const $ = id => document.getElementById(id);
 const bridge = window.ChromaAndroid || null;
+const BACK_HINT = window.ChromaIOS ? 'Swipe in from the left edge' : 'Swipe back';
 const TAGLINES = {
   neon:'Glowing rainbow ink', smoke:'Soft rising smoke', ocean:'Clear rippling water', waves:'Moving color ripples',
   fire:'Flames that rise', ink:'Ink spreading on paper', aurora:'Drifting northern lights', lava:'Thick molten glow',
@@ -1370,6 +1373,22 @@ function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 300)
 function setTweak(key, value) {
   (tweaks[style.id] = tweaks[style.id] || {})[key] = value;
   saveSoon();
+  syncEdited();
+}
+// "Edited" on Fine-tune when this style differs from how the app came; Reset only then.
+function syncEdited() {
+  const edited = !!tweaks[style.id] && Object.keys(tweaks[style.id]).length > 0;
+  $('tune-edited').hidden = !edited;
+  $('reset').disabled = !edited;
+}
+// One line under "Play options" saying what's switched on.
+function syncPlaySummary() {
+  const on = [];
+  if (opts.symmetry > 1) on.push({ 2: 'Mirror', 4: '4-way', 6: 'Kaleido' }[opts.symmetry]);
+  if (opts.auto) on.push('Auto-stir');
+  if (opts.tilt > 0) on.push('Tilt to pour');
+  if (opts.tapSplash) on.push('Tap to splash');
+  $('play-sum').textContent = on.length ? on.join(' · ') : 'Symmetry, auto-stir, tilt and tap';
 }
 
 // Converts between the engine value and the slider position (the same flip both ways).
@@ -1432,7 +1451,7 @@ SLIDERS.forEach(def => {
   attachSliderTouch(row.querySelector('.track'), input);
   input.addEventListener('input', () => {
     const v = toUi(def, parseFloat(input.value));
-    if (def.scope === 'opts') { opts[def.key] = v; saveSoon(); }
+    if (def.scope === 'opts') { opts[def.key] = v; saveSoon(); syncPlaySummary(); }
     else { cfg[def.key] = v; setTweak(def.key, v); }
     $('o-' + def.key).textContent = fmtValue(def, v);
     paintRange(input, def.show === 'center' && !def.fromLeft);
@@ -1450,7 +1469,7 @@ function syncUI() {
   $('title').innerHTML = editingWp ? 'Live<br>wallpaper' : 'Chroma<br>Flow';
   $('lede').textContent = editingWp
     ? 'Pick the style, colors and settings for your wallpaper. The fluid behind this menu is the preview.'
-    : 'Pick a style and your colors, then tap Play. Swipe back any time to come back here.';
+    : `Pick a style and your colors, then tap Play. ${BACK_HINT} any time to come back here.`;
   $('wp-back').hidden = !editingWp;
   $('open-settings').hidden = editingWp;
   $('sec-play').hidden = editingWp;
@@ -1483,6 +1502,8 @@ function syncUI() {
   Object.keys(QUALITY).forEach(q => $('q-' + q).setAttribute('aria-pressed', String(quality === q)));
   custom.forEach((c, i) => { $('c' + i).value = c; });
   $('cbg').value = cfg.bg;
+  syncEdited();
+  syncPlaySummary();
   syncWp();
 }
 
@@ -1516,8 +1537,8 @@ custom.forEach((_, i) => {
 });
 $('cbg').addEventListener('input', e => { cfg.bg = e.target.value; setTweak('bg', cfg.bg); });
 STYLE_TOGGLES.forEach(([id, key]) => $(id).addEventListener('change', e => { cfg[key] = e.target.checked; setTweak(key, cfg[key]); }));
-$('t-auto').addEventListener('change', e => { opts.auto = e.target.checked; save(); });
-$('t-tap').addEventListener('change', e => { opts.tapSplash = e.target.checked; save(); });
+$('t-auto').addEventListener('change', e => { opts.auto = e.target.checked; save(); syncPlaySummary(); });
+$('t-tap').addEventListener('change', e => { opts.tapSplash = e.target.checked; save(); syncPlaySummary(); });
 SYMMETRIES.forEach(n => $('sym-' + n).addEventListener('click', () => { opts.symmetry = n; syncUI(); save(); }));
 Object.keys(QUALITY).forEach(q => $('q-' + q).addEventListener('click', () => {
   quality = q;
@@ -1663,6 +1684,7 @@ if (wpOn) {
 const menu = $('menu'), playbar = $('playbar'), playhint = $('playhint');
 function startPlay() {
   playing = true;
+  playhint.textContent = `${BACK_HINT} to return to the menu`;
   autoPrev = null;
   menu.classList.add('away');
   playbar.classList.add('away');

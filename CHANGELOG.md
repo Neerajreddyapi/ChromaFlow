@@ -2,6 +2,16 @@
 
 All notable changes to Chroma Flow are listed here. Versions follow `versionName` in `app/build.gradle.kts`.
 
+## [Unreleased]
+
+### Added
+- iPhone and iPad app in `ios/`, using the same fluid engine (no live wallpaper there: iOS doesn't allow live wallpapers).
+
+### Changed
+- Play options (symmetry, tilt, auto-stir, tap to splash) fold away like Fine-tune, with a one-line summary of what's on.
+- Fine-tune shows an "Edited" tag when a style differs from how the app came, and Reset only works then.
+- On iPhone the hints say "Swipe in from the left edge" instead of "Swipe back".
+
 ## [1.3.4] - 2026-11-15
 
 ### Added
