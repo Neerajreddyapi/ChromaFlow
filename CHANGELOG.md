@@ -2,13 +2,14 @@
 
 All notable changes to Chroma Flow are listed here. Versions follow `versionName` in `app/build.gradle.kts`.
 
-## [Unreleased]
+## [1.3.5] - 2026-11-17
 
 ### Added
 - Touch shapes (Play options): play with Hearts, Bubbles, Stars or Sparkles instead of fluid. Only the chosen shapes appear (no fluid), auto-stir drops them too, they follow Symmetry, and Tap to splash pops a burst. Shape colors: the fluid's own colors (default), Rainbow, or one color you pick.
 - iPhone and iPad app in `ios/`, using the same fluid engine (no live wallpaper there: iOS doesn't allow live wallpapers).
 
 ### Changed
+- New app icon: a wavy, glowing rainbow "Chroma Flow" over swirling fluid.
 - Play options (symmetry, tilt, auto-stir, tap to splash) fold away like Fine-tune, with a one-line summary of what's on.
 - Fine-tune shows an "Edited" tag when a style differs from how the app came, and Reset only works then.
 - On iPhone the hints say "Swipe in from the left edge" instead of "Swipe back".
