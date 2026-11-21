@@ -6,7 +6,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Download on the App Store](https://img.shields.io/badge/App%20Store-Download-0D96F6?logo=appstore&logoColor=white)](https://apps.apple.com/app/id6835167619)
-[![App Store version](https://img.shields.io/itunes/v/6835167619?label=App%20Store%20version&logo=apple&color=0D96F6)](https://apps.apple.com/app/id6835167619)
 [![App Store downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fchromaflow.vercel.app%2Fapi%2Fdownloads%3Fbadge%3Dappstore&cacheSeconds=3600)](https://apps.apple.com/app/id6835167619)
 [![Google Play: coming soon](https://img.shields.io/badge/Google%20Play-coming%20soon-01875f?logo=googleplay&logoColor=white)](#download)
 [![Google Play downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fchromaflow.vercel.app%2Fapi%2Fdownloads%3Fbadge%3Dplay&cacheSeconds=3600)](#download)
