@@ -5,9 +5,13 @@
 [![Build](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml/badge.svg)](https://github.com/Neerajreddyapi/ChromaFlow/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Download on the App Store](https://img.shields.io/badge/App%20Store-Download-0D96F6?logo=appstore&logoColor=white)](https://apps.apple.com/app/id6835167619)
+[![App Store version](https://img.shields.io/itunes/v/6835167619?label=App%20Store%20version&logo=apple&color=0D96F6)](https://apps.apple.com/app/id6835167619)
+[![App Store downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fchromaflow.vercel.app%2Fapi%2Fdownloads%3Fbadge%3Dappstore&cacheSeconds=3600)](https://apps.apple.com/app/id6835167619)
 [![Google Play: coming soon](https://img.shields.io/badge/Google%20Play-coming%20soon-01875f?logo=googleplay&logoColor=white)](#download)
+[![Google Play downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fchromaflow.vercel.app%2Fapi%2Fdownloads%3Fbadge%3Dplay&cacheSeconds=3600)](#download)
 
-A fluid art app for Android. Touch the screen and swirl living color with your fingertips.
+A fluid art app for iPhone, iPad and Android. Touch the screen and swirl living color with your fingertips.
 
 <p>
   <img src="docs/screenshots/menu.jpg" width="160" alt="Home screen">
@@ -19,9 +23,11 @@ A fluid art app for Android. Touch the screen and swirl living color with your f
 
 ## Download
 
-**Coming soon on Google Play.** Chroma Flow is being tested right now and will be available on the Play Store soon.
+**iPhone and iPad:** [Download Chroma Flow on the App Store](https://apps.apple.com/app/id6835167619). Free, iOS 16 or later.
 
-There are no APK downloads on GitHub. Please install Chroma Flow from Google Play once it's live, so you get automatic updates. If you're a developer, you can [build it yourself](#development-setup).
+**Android:** coming soon on Google Play. Chroma Flow is being tested right now and will be available on the Play Store soon.
+
+There are no APK or IPA downloads on GitHub. Please install Chroma Flow from the App Store, or from Google Play once it's live, so you get automatic updates. If you're a developer, you can [build it yourself](#development-setup).
 
 ## Features
 
