@@ -533,8 +533,12 @@ function supportsRenderTarget(gl, internalFormat, format, type) {
   return ok;
 }
 
-const ctx = getWebGLContext();
+// '#nogl': the iPhone app saw the page crash twice while starting the graphics, so don't try again.
+const ctx = location.hash === '#nogl' ? {} : getWebGLContext();
 if (!ctx.gl) {
+  if (window.ChromaIOS) {
+    document.querySelector('#nogl p').innerHTML = '<b>Can\'t start the fluid</b>This device couldn\'t start the graphics Chroma Flow needs (WebGL). Close the app and open it again, or update to the latest iOS.';
+  }
   document.getElementById('nogl').hidden = false;
   document.getElementById('menu').hidden = true;
   document.getElementById('playbar').hidden = true;

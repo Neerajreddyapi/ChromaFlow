@@ -87,9 +87,20 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
     }
 
     // iOS can stop the page's process in the background; settings are saved, so just reload.
+    // If it keeps crashing (the graphics can't start, as for this iPhone app on a Mac), stop
+    // reloading and open the page in no-graphics mode, which explains instead of looping.
+    private var crashes: [Date] = []
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         UIApplication.shared.isIdleTimerDisabled = false
-        webView.reload()
+        crashes = crashes.filter { $0.timeIntervalSinceNow > -60 } + [Date()]
+        if crashes.count >= 2 {
+            let dir = Bundle.main.resourceURL!.appendingPathComponent("web", isDirectory: true)
+            var page = URLComponents(url: dir.appendingPathComponent("index.html"), resolvingAgainstBaseURL: false)!
+            page.fragment = "nogl"
+            webView.loadFileURL(page.url!, allowingReadAccessTo: dir)
+        } else {
+            webView.reload()
+        }
     }
 }
 
