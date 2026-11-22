@@ -189,6 +189,8 @@ html.ios .switch input{background:rgba(255,255,255,.18);box-shadow:inset 0 1px 2
 html.ios .switch input::after{box-shadow:0 2px 6px rgba(0,0,0,.35),inset 0 1px 0 #fff}
 html.ios .sheet{background:rgba(7,8,12,.55);-webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%)}
 html.ios .where{background:rgba(0,0,0,.35)}
+/* With the native Liquid Glass menu (iPhone app), the page's own menu stays hidden but keeps working underneath. */
+html.native #menu,html.native #playbar,html.native #settings,html.native .upd-bar{visibility:hidden!important;pointer-events:none!important}
 </style>
 </head>
 <body>
@@ -1992,6 +1994,53 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') window.chromaBack();
   else if (e.key === 'Enter' && !playing && !held && !settingsOpen() && !(e.target instanceof HTMLInputElement)) startPlay();
 });
+
+
+/* ---------- iPhone: native Liquid Glass menu ---------- */
+// The iPhone app draws the menu and Settings natively (SwiftUI, Apple's Liquid Glass) over the
+// fluid. This page's own menu stays hidden but still does all the work: the native menu reads
+// its state with ChromaNativeModel() and presses its controls with ChromaNativeAct().
+if (window.ChromaIOS && window.ChromaNativeMenu) {
+  document.documentElement.classList.add('native');
+  const txt = el => (el ? el.textContent.trim() : '');
+  const segs = ids => ids.map(id => ({ id, label: txt($(id)), on: $(id).getAttribute('aria-pressed') === 'true' }));
+  const sliders = group => [...$(group).querySelectorAll('input[type=range]')].map(el => {
+    const row = el.closest('.slider'), lab = row.querySelector('label');
+    return { id: el.id, label: txt(lab.firstChild), hint: txt(lab.querySelector('small')), min: +el.min, max: +el.max,
+      step: +el.step, value: +el.value, out: txt($('o-' + el.id.slice(2))), hidden: row.hidden };
+  });
+  const sw = (id, wrap) => {
+    const lab = $(id).closest('label');
+    return { id, label: txt(lab.querySelector('span').firstChild), hint: txt(lab.querySelector('small')), on: $(id).checked, hidden: !!(wrap && $(wrap).hidden) };
+  };
+  window.ChromaNativeModel = () => JSON.stringify({
+    playing, lede: txt($('lede')),
+    styles: STYLES.map(st => ({ id: st.id, name: st.name, tag: TAGLINES[st.id], on: st.id === style.id })),
+    source: segs(['src-style', 'src-rainbow', 'src-custom']), colorNote: txt($('color-note')),
+    custom: custom.slice(), customShown: !$('my-colors').hidden, bg: $('cbg').value,
+    playSum: txt($('play-sum')), sym: segs(SYMMETRIES.map(n => 'sym-' + n)), shapes: segs(SHAPE_KEYS.map(k => 'shape-' + k)),
+    shapeOpts: !$('shape-opts').hidden, shapeColors: segs(SHAPE_COLORS.map(k => 'shc-' + k)), shapePick: !$('shape-pick').hidden,
+    shapeHex: $('shape-hex').value, playSliders: sliders('g-play'), auto: sw('t-auto'), tap: sw('t-tap'),
+    tuneFor: style.name, edited: !$('tune-edited').hidden,
+    look: sliders('g-look'), motion: sliders('g-motion'), brush: sliders('g-brush'),
+    toggles: [sw('t-shading', 'w-shading'), sw('t-rays', 'w-rays'), sw('t-stars', 'w-stars')],
+    reset: { label: txt($('reset')), armed: $('reset').classList.contains('armed'), disabled: $('reset').disabled },
+    quality: segs(Object.keys(QUALITY).map(q => 'q-' + q)),
+    updStatus: txt($('upd-status')), updLabel: txt($('upd-now')), version: txt($('app-version')),
+    resetAll: { label: txt($('reset-all')), armed: $('reset-all').classList.contains('armed') },
+    playStyle: txt($('play-style'))
+  });
+  // kind: click | value (range or color) | check. Returns the new model.
+  window.ChromaNativeAct = (kind, id, value) => {
+    const el = $(id);
+    if (el) {
+      if (kind === 'click') el.click();
+      else if (kind === 'check') { el.checked = !!value; el.dispatchEvent(new Event('change', { bubbles: true })); }
+      else { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
+    }
+    return window.ChromaNativeModel();
+  };
+}
 
 /* ---------- Start ---------- */
 // Android can drop the GPU context while the app is in the background. Settings are saved,

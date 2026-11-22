@@ -1,3 +1,4 @@
+import SwiftUI
 import UIKit
 import WebKit
 
@@ -7,6 +8,9 @@ import WebKit
 final class FluidViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
 
     private var web: WKWebView!
+    /// The native Liquid Glass menu and Settings, shown over the fluid while not playing.
+    private let menu = MenuBridge()
+    private var menuHost: UIHostingController<NativeMenuRoot>!
     private static let void = UIColor(red: 7 / 255, green: 8 / 255, blue: 12 / 255, alpha: 1)
 
     override func loadView() {
@@ -14,6 +18,7 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         content.addUserScript(WKUserScript(source: """
             window.ChromaIOS = true;
+            window.ChromaNativeMenu = true;
             window.ChromaVersion = "\(version)";
             window.ChromaAndroid = {
               setPlaying: function (on) { window.webkit.messageHandlers.chroma.postMessage({ playing: !!on }); }
@@ -53,13 +58,36 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         #if DEBUG
         if #available(iOS 16.4, *) { web.isInspectable = true }
         #endif
-        view = web
+        let root = UIView()
+        root.backgroundColor = Self.void
+        web.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(web)
+        NSLayoutConstraint.activate([
+            web.leadingAnchor.constraint(equalTo: root.leadingAnchor), web.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            web.topAnchor.constraint(equalTo: root.topAnchor), web.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+        ])
+        view = root
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         let dir = Bundle.main.resourceURL!.appendingPathComponent("web", isDirectory: true)
         web.loadFileURL(dir.appendingPathComponent("index.html"), allowingReadAccessTo: dir)
+        CTFontManagerRegisterFontsForURL(dir.appendingPathComponent("fonts/Unbounded.ttf") as CFURL, .process, nil)
+
+        menu.web = web
+        menuHost = UIHostingController(rootView: NativeMenuRoot(bridge: menu))
+        menuHost.view.backgroundColor = .clear
+        addChild(menuHost)
+        menuHost.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(menuHost.view)
+        NSLayoutConstraint.activate([
+            menuHost.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            menuHost.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            menuHost.view.topAnchor.constraint(equalTo: view.topAnchor),
+            menuHost.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        menuHost.didMove(toParent: self)
 
         // Swiping in from the left edge works like Android's Back: it leaves play mode,
         // closes Settings or the setup screens. On the menu itself it does nothing.
@@ -70,6 +98,7 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
 
     @objc private func edgeSwipe(_ g: UIScreenEdgePanGestureRecognizer) {
         guard g.state == .ended, g.translation(in: view).x > 60 else { return }
+        if menu.showSettings { menu.showSettings = false; return }
         web.evaluateJavaScript("window.chromaBack && window.chromaBack()", completionHandler: nil)
     }
 
@@ -77,6 +106,33 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any], let playing = body["playing"] as? Bool else { return }
         UIApplication.shared.isIdleTimerDisabled = playing
+        showMenu(!playing)
+    }
+
+    /// While playing only the fluid is on screen; coming back shows the native menu again.
+    private func showMenu(_ on: Bool) {
+        if on { menu.refresh(); menuHost.view.isHidden = false }
+        UIView.animate(withDuration: 0.3, animations: { self.menuHost.view.alpha = on ? 1 : 0 },
+                       completion: { _ in if !on { self.menuHost.view.isHidden = true } })
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        menu.refresh()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-nativeSettings") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.menu.showSettings = true }
+        }
+        // Self-check of the native menu: pick Ocean, Rainbow colors, Play, then Back.
+        if ProcessInfo.processInfo.arguments.contains("-nativeDemo") {
+            let steps: [(Double, () -> Void)] = [
+                (3, { self.menu.act("click", "style-ocean") }),
+                (5, { self.menu.act("click", "src-rainbow") }),
+                (8, { self.menu.act("click", "play") }),
+                (13, { self.web.evaluateJavaScript("window.chromaBack && window.chromaBack()", completionHandler: nil) }),
+            ]
+            for (t, step) in steps { DispatchQueue.main.asyncAfter(deadline: .now() + t, execute: step) }
+        }
+        #endif
     }
 
     // The page never navigates away from the bundled file; web links open in Safari.
