@@ -122,6 +122,14 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
         if ProcessInfo.processInfo.arguments.contains("-nativeSettings") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.menu.showSettings = true }
         }
+        // Screenshots: -nativeStyle galaxy -nativeSource src-style picks a style and color source.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-nativeStyle"), i + 1 < args.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { self.menu.act("click", "style-" + args[i + 1]) }
+        }
+        if let i = args.firstIndex(of: "-nativeSource"), i + 1 < args.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.menu.act("click", args[i + 1]) }
+        }
         // Self-check of the native menu: pick Ocean, Rainbow colors, Play, then Back.
         if ProcessInfo.processInfo.arguments.contains("-nativeDemo") {
             let steps: [(Double, () -> Void)] = [
