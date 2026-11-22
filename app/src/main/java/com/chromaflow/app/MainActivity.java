@@ -34,6 +34,7 @@ import android.window.OnBackInvokedDispatcher;
 public class MainActivity extends Activity {
 
     private WebView web;
+    private Updates updates;
     private static final int REQUEST_WALLPAPER = 1;
     private static final String KEY_PENDING_WHERE = "pending_where";
     // The last wallpaper result ("home", "lock", "both", or "none" if backed out), kept until the page
@@ -69,6 +70,7 @@ public class MainActivity extends Activity {
         // Follow the phone's font size setting (Settings > Display > Font size).
         s.setTextZoom(Math.round(getResources().getConfiguration().fontScale * 100));
 
+        updates = new Updates(this);
         web.addJavascriptInterface(new Bridge(), "ChromaAndroid");
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -149,6 +151,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        updates.resume();
         goImmersive();
     }
 
@@ -217,6 +220,21 @@ public class MainActivity extends Activity {
     }
 
     private class Bridge {
+        /** The installed version, e.g. "1.3.5". */
+        @JavascriptInterface
+        public String appVersion() { return Updates.version(MainActivity.this); }
+
+        /** Asks Google Play for a newer version; answers window.chromaUpdate('available' | 'none' | 'unknown'). */
+        @JavascriptInterface
+        public void checkUpdate() {
+            runOnUiThread(() -> updates.check(state ->
+                    web.evaluateJavascript("window.chromaUpdate && window.chromaUpdate('" + state + "')", null)));
+        }
+
+        /** Installs the update with Play's update screen, or opens the Play Store page. */
+        @JavascriptInterface
+        public void startUpdate() { runOnUiThread(updates::start); }
+
         @JavascriptInterface
         public void setPlaying(boolean value) {
             runOnUiThread(() -> {

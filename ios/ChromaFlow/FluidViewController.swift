@@ -11,8 +11,10 @@ final class FluidViewController: UIViewController, WKNavigationDelegate, WKScrip
 
     override func loadView() {
         let content = WKUserContentController()
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         content.addUserScript(WKUserScript(source: """
             window.ChromaIOS = true;
+            window.ChromaVersion = "\(version)";
             window.ChromaAndroid = {
               setPlaying: function (on) { window.webkit.messageHandlers.chroma.postMessage({ playing: !!on }); }
             };

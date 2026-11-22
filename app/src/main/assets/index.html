@@ -74,6 +74,11 @@ body{background:var(--void);color:var(--fg);font-family:var(--body);-webkit-font
 .where-card .where-cancel{justify-content:center;border:0;background:transparent;color:var(--muted);margin-top:2px}
 .toast{position:fixed;z-index:8;left:50%;bottom:calc(112px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:calc(100% - 36px);box-sizing:border-box;padding:12px 18px;border-radius:16px;background:rgba(30,33,48,.96);border:1px solid var(--line);font-size:14px;line-height:1.4;text-align:center;pointer-events:none;opacity:0;transition:opacity .4s}
 .toast.on{opacity:1}
+.upd-bar{position:fixed;z-index:8;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 28px);box-sizing:border-box;padding:8px 8px 8px 16px;border-radius:999px;background:rgba(30,33,48,.96);border:1px solid var(--line);font-size:14px;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+.upd-bar button{height:34px;padding:0 14px;border-radius:999px;border:0;font:600 13.5px/1 var(--body);cursor:pointer}
+.upd-bar .go{background:var(--fg);color:var(--void)}
+.upd-bar .later{background:transparent;color:var(--muted)}
+.version{text-align:center}
 .rainbow{font-weight:700;background:linear-gradient(90deg,#ff2a6d,#ffb000,#b6ff3d,#05d9e8,#6a5cff,#ff2a6d);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:rainbow 2.5s linear infinite}
 .monkey{display:inline-block;transform-origin:50% 90%}
 @keyframes rainbow{to{background-position:200% 0}}
@@ -315,6 +320,16 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </section>
 
+    <section id="set-upd" hidden>
+      <h2>Updates</h2>
+      <div class="panel">
+        <p class="note" id="upd-status"></p>
+        <button class="wide" type="button" id="upd-now">Update from Play Store</button>
+        <label class="switch" id="upd-auto-row"><span>Auto-update<small>Install new versions as soon as you open the app</small></span><input type="checkbox" id="upd-auto"></label>
+        <p class="note version" id="app-version"></p>
+      </div>
+    </section>
+
     <section class="danger">
       <button class="reset-all" type="button" id="reset-all">Reset everything</button>
       <p class="note">Puts every style, slider, color and switch back to how the app came.</p>
@@ -344,6 +359,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="upd-bar" id="upd-bar" role="status" hidden><span>Update available</span><button type="button" class="go" id="upd-go">Update</button><button type="button" class="later" id="upd-later">Later</button></div>
 <div class="playhint" id="playhint">Swipe back to return to the menu</div>
 
 <div class="nogl" id="nogl" hidden><p><b>Can't start the fluid</b>This phone's browser engine didn't give us WebGL with half-float textures. Update "Android System WebView" from the Play Store and try again.</p></div>
@@ -1747,6 +1763,7 @@ const settings = $('settings');
 const settingsOpen = () => !settings.classList.contains('away');
 function openSettings() {
   syncWp();
+  syncUpdates();
   settings.scrollTop = 0;
   settings.classList.remove('away');
 }
@@ -1847,10 +1864,64 @@ if (wpOn) {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncUI(); });
 }
 
+/* ---------- Updates ---------- */
+// Android: on opening, ask Google Play for a newer version. If there is one, a small "Update
+// available" bar offers Update / Later, or with Auto-update on the update starts right away.
+// Settings > Updates shows the state, an Update button and the installed version.
+// iPhone: the App Store updates apps itself, so Settings shows the version and a store button.
+const UPD_KEY = KEY + '.autoUpdate';
+const updAndroid = !!(bridge && bridge.checkUpdate);
+const updIOS = !!window.ChromaIOS;
+let updState = 'checking', updWanted = false, autoUpdate = false;
+try { autoUpdate = localStorage.getItem(UPD_KEY) === '1'; } catch (e) {}
+function syncUpdates() {
+  if (!updAndroid && !updIOS) return;
+  $('upd-auto').checked = autoUpdate;
+  $('upd-status').textContent = updIOS ? 'The App Store keeps Chroma Flow up to date.'
+    : updState === 'available' ? 'A new version is ready to install.'
+    : updState === 'none' ? "You're on the latest version."
+    : updState === 'checking' ? 'Checking for updates\u2026'
+    : "Couldn't check Google Play right now.";
+}
+function showUpdateBar() { if (updWanted && !playing) $('upd-bar').hidden = false; }
+function startUpdate() {
+  updWanted = false;
+  $('upd-bar').hidden = true;
+  if (updIOS) location.href = 'https://apps.apple.com/app/id6835167619';
+  else bridge.startUpdate();
+}
+if (updAndroid || updIOS) {
+  $('set-upd').hidden = false;
+  const v = updAndroid ? bridge.appVersion() : (window.ChromaVersion || '');
+  $('app-version').textContent = v ? `Version ${v}` : '';
+  $('upd-now').addEventListener('click', startUpdate);
+  $('upd-go').addEventListener('click', startUpdate);
+  $('upd-later').addEventListener('click', () => { updWanted = false; $('upd-bar').hidden = true; });
+  if (updIOS) {
+    $('upd-now').textContent = 'Update from App Store';
+    $('upd-auto-row').hidden = true;
+  } else {
+    $('upd-auto').addEventListener('change', e => {
+      autoUpdate = e.target.checked;
+      try { localStorage.setItem(UPD_KEY, autoUpdate ? '1' : '0'); } catch (err) {}
+    });
+    window.chromaUpdate = state => {
+      updState = state;
+      syncUpdates();
+      if (state !== 'available') return;
+      if (autoUpdate) startUpdate();
+      else { updWanted = true; showUpdateBar(); }
+    };
+    setTimeout(() => bridge.checkUpdate(), 1200);
+  }
+  syncUpdates();
+}
+
 /* ---------- Screens ---------- */
 const menu = $('menu'), playbar = $('playbar'), playhint = $('playhint');
 function startPlay() {
   playing = true;
+  $('upd-bar').hidden = true;
   playhint.textContent = `${BACK_HINT} to return to the menu`;
   autoPrev = null;
   menu.classList.add('away');
@@ -1873,6 +1944,7 @@ function showMenu() {
   menu.classList.remove('away');
   playbar.classList.remove('away');
   if (bridge) bridge.setPlaying(false);
+  showUpdateBar();
 }
 // Called by the Android Back gesture. Returns true when it handled the back press
 // (false lets the app close).
